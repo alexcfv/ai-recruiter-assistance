@@ -1,0 +1,6 @@
+.env
+app.db
+config.yaml
+chromadb/
+AGENTS.md
+resume_rag_ranker.egg-info
