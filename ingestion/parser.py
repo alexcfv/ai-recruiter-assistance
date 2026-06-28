@@ -12,7 +12,7 @@ class ResumeParser:
         return self.clean_text(text)
     
     def extract_github_link(self, text: str) -> str | None:
-        match = re.search(r'github\.com\/([a-zA-Z0-9_-]+)', text)
+        match = re.search(r'github\.com/([a-zA-Z0-9_-]+)', text, re.IGNORECASE)
         if match:
             return match.group(1)
         return None
