@@ -27,6 +27,7 @@ class IndexService:
         all_grouped = self.vector_store.get_all_grouped_by_source()
         new_profiles = []
         for source, chunks in all_grouped.items():
+            # Проверяем существование профиля, но для отладки можем разрешить обновление
             if not self.profile_repository.profile_exists(source):
                 github_analysis = None
                 
@@ -35,13 +36,29 @@ class IndexService:
                     github_username = self.resume_parser.extract_github_link(full_text)
                     
                     if github_username:
+                        print(f"DEBUG: Found GitHub username: {github_username} for {source}")
                         try:
                             github_data = await self.github_collector.collect_user_data(github_username)
-                            github_analysis = self.github_analyzer.analyze_code(github_data)
+                            print(f"DEBUG: Collected GitHub data for {github_username}")
+                            
+                            # Проверяем, что метод асинхронный
+                            import inspect
+                            if inspect.iscoroutinefunction(self.github_analyzer.analyze_code):
+                                github_analysis = await self.github_analyzer.analyze_code(github_data)
+                            else:
+                                print(f"DEBUG: analyze_code is NOT a coroutine function! Type: {type(self.github_analyzer.analyze_code)}")
+                                github_analysis = self.github_analyzer.analyze_code(github_data)
+                                
+                            print(f"DEBUG: GitHub analysis result obtained")
                         except Exception as e:
                             print(f"GitHub analysis failed for {source}: {e}")
+                            import traceback
+                            traceback.print_exc()
+                    else:
+                        print(f"DEBUG: No GitHub username found in {source}")
                 
-                profile = self.profile_builder.build_profile(chunks, github_analysis)
+                profile = await self.profile_builder.build_profile(chunks, github_analysis)
+                print(f"DEBUG: Final profile github_analysis field: {profile.get('github_analysis')}")
                 self.profile_repository.create_profile(source, profile)
                 new_profiles.append(source)
 

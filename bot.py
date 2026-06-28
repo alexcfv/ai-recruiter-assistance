@@ -124,8 +124,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(f"Results for: {query}")
         for i, c in enumerate(result["candidates"], 1):
-            text = f"{i}. {c['source']} (score: {c['score']:.4f})\n\n{c['explanation']}"
-            await update.message.reply_text(text)
+            text = f"<b>{i}. {c['source']}</b> (score: {c['score']:.4f})\n\n{c['explanation']}"
+            
+            profile = c.get("profile", {})
+            github = profile.get("github_analysis")
+            
+            if github:
+                if "error" in github:
+                    text += f"\n\n <i>GitHub Analysis: {github['error']}</i>"
+                else:
+                    text += (
+                        f"\n\n<b>GitHub Analysis:</b>\n"
+                        f"• <b>Quality:</b> {github.get('code_quality', 'N/A')}\n"
+                        f"• <b>Depth:</b> {github.get('technical_depth', 'N/A')}\n"
+                        f"• <b>Tech:</b> {', '.join(github.get('key_technologies', []))}\n"
+                        f"• <b>Summary:</b> {github.get('overall_assessment', 'N/A')}"
+                    )
+            
+            await update.message.reply_text(text, parse_mode="HTML")
     except Exception as e:
         await update.message.reply_text(f"Search error: {e}")
 

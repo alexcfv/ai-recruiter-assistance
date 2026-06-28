@@ -8,13 +8,17 @@ class GitHubDataCollector:
         self.mcp_client = mcp_client
 
     async def collect_user_data(self, username: str) -> dict:
+        print(f"DEBUG: Requesting repos for {username} via MCP...")
         repos_response = await self.mcp_client.get_user_repositories(username)
         
         if not repos_response or not repos_response.content:
+            print(f"DEBUG: MCP returned empty response for {username}")
             return {"error": "No repositories found"}
 
+        print(f"DEBUG: MCP response content: {repos_response.content[0].text[:500]}")
         repos_data = json.loads(repos_response.content[0].text)
-        top_repos = repos_data.get("repositories", [])[:3]
+        # MCP GitHub server returns repos in 'items' for search results
+        top_repos = repos_data.get("items", repos_data.get("repositories", []))[:3]
 
         collected_data = {
             "username": username,

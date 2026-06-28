@@ -1,4 +1,5 @@
 import asyncio
+import json
 from services.ranking import find_best_candidates
 
 
@@ -26,6 +27,7 @@ class QueryService:
                 "source": source,
                 "score": score,
                 "explanation": full_explanation,
+                "profile": profiles.get(source, {}).get("profile", {}) if isinstance(profiles.get(source, {}).get("profile"), dict) else json.loads(profiles.get(source, {}).get("profile", "{}"))
             })
 
         return {
