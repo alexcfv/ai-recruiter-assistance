@@ -39,6 +39,7 @@ class IndexService:
                     
                     if github_username:
                         try:
+                            # Run async GitHub operations in a new event loop
                             github_data = asyncio.run(self.github_collector.collect_user_data(github_username))
                             github_analysis = self.github_analyzer.analyze_code(github_data)
                         except Exception as e:
