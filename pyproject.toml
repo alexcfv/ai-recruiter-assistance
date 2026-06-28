@@ -16,6 +16,7 @@ dependencies = [
     "pdfplumber",
     "python-telegram-bot",
     "pyyaml",
+    "mcp",
 ]
 
 [tool.setuptools.packages.find]

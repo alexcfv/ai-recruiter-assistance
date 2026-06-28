@@ -4,3 +4,4 @@ openai
 pdfplumber
 python-telegram-bot
 pyyaml
+mcp
