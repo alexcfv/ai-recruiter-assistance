@@ -20,3 +20,8 @@ profile_builder:
 reranker:
   model: mistral-small-2603
   timeout: 120
+
+github:
+  mcp_server_command: "npx -y @modelcontextprotocol/server-github"
+  env:
+    GITHUB_PERSONAL_ACCESS_TOKEN: "YOUR_GITHUB_TOKE"
