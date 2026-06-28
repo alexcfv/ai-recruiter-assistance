@@ -12,8 +12,20 @@ class ProfileBuilder:
         )
         self.rate_limiter = rate_limiter
 
-    def build_profile(self, chunks: list[str]) -> dict:
+    def build_profile(self, chunks: list[str], github_analysis: dict = None) -> dict:
         context = "\n".join(chunks)
+
+        github_context = ""
+        if github_analysis and "error" not in github_analysis:
+            github_context = f"""
+
+GitHub Analysis:
+- Code Quality: {github_analysis.get('code_quality', 'N/A')}
+- Technical Depth: {github_analysis.get('technical_depth', 'N/A')}
+- Architecture Patterns: {', '.join(github_analysis.get('architecture_patterns', []))}
+- Key Technologies: {', '.join(github_analysis.get('key_technologies', []))}
+- Overall Assessment: {github_analysis.get('overall_assessment', 'N/A')}
+"""
 
         prompt = f"""
 Extract a structured candidate profile from the resume text below.
@@ -24,6 +36,7 @@ Return valid JSON with EXACTLY these fields:
 - "experience": list of objects, each with "role", "company", "description"
 - "education": list of objects, each with "degree", "institution"
 - "projects": list of objects, each with "name", "description"
+- "github_analysis": object with fields "code_quality", "technical_depth", "architecture_patterns", "key_technologies", "overall_assessment" (if available, otherwise null)
 
 Rules:
 - "skills" MUST be a flat array of strings. NEVER group skills into categories.
@@ -31,6 +44,7 @@ Rules:
 
 Resume:
 {context}
+{github_context}
 """
 
         if self.rate_limiter:
