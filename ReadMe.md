@@ -4,7 +4,7 @@
 ![Telegram](https://img.shields.io/badge/Telegram-bot-blue)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector--db-yellow)
 
-AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral embeddings into ChromaDB, builds structured candidate profiles with LLM, and finds the best match for any job query using two-stage ranking.
+AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral embeddings into ChromaDB, builds structured candidate profiles with LLM, performs deep GitHub code analysis via MCP, and finds the best match for any job query using two-stage ranking.
 
 ## How it works
 
@@ -13,7 +13,8 @@ AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral emb
 - Scans a folder for `.pdf` files
 - Extracts text via `pdfplumber`, splits into 500-char chunks with 100-char overlap
 - Each chunk → Mistral embedding → stored in ChromaDB (persistent vector DB)
-- For every new resume, LLM builds a structured profile (summary, skills, experience, projects, education) and saves it to SQLite
+- **GitHub Analysis (New):** Automatically extracts GitHub links, collects repository data (README, code samples) via **MCP (Machine Communication Protocol)**, and performs a balanced LLM assessment of code quality and technical depth.
+- For every new resume, LLM builds a structured profile (summary, skills, experience, projects, education, **github_analysis**) and saves it to SQLite
 - Profiles persist between runs and are used during reranking (Stage B)
 
 ### 2. Search flow
@@ -30,7 +31,7 @@ User query → embedding → ChromaDB (top-10 chunks) → group by file → embe
 - **Lower embedding_score = better match** (distance ~0 = identical, ~1.0 = unrelated)
 
 **Stage B — LLM rerank via profiles**
-- Structured profiles for those 10 candidates are loaded from SQLite
+- Structured profiles (including GitHub analysis) for those 10 candidates are loaded from SQLite
 - **Single** LLM call sends all 10 profiles + query, asks to rate each 1-10
 - Final score combines embedding distance and LLM rating:
 
@@ -42,13 +43,21 @@ User query → embedding → ChromaDB (top-10 chunks) → group by file → embe
 - Typical final scores: ~0.15–0.6
 
 **Stage C — Explanation**
-- For top-3 candidates: LLM explains the match in under 50 words (skills, company, tasks)
+- For top-3 candidates: LLM explains the match in under 50 words (skills, company, tasks) and displays GitHub insights.
 
-**LLM calls per search query:**
-- 1 embedding call (query → vector)
-- 1 rerank call (10 profiles + query → JSON ratings)
-- 3 explanation calls (one per top candidate)
-- Total: **5 Mistral API calls per search**
+**Mistral API calls budget:**
+
+**During Indexing (per 1 new resume):**
+- **~5-10** embedding calls (depends on resume length)
+- **1** GitHub analysis call (if link found)
+- **1** Profile building call
+- *Total: ~7-12 calls per resume*
+
+**During Search (per 1 query):**
+- **1** embedding call (query → vector)
+- **1** rerank call (10 profiles + query → JSON ratings)
+- **3** explanation calls (one per top candidate)
+- *Total: **5** Mistral API calls per search*
 
 ## Setup
 
