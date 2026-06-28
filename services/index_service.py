@@ -1,10 +1,16 @@
+import asyncio
+
+
 class IndexService:
-    def __init__(self, embedder, loader, vector_store, profile_builder, profile_repository):
+    def __init__(self, embedder, loader, vector_store, profile_builder, profile_repository, github_collector=None, github_analyzer=None, resume_parser=None):
         self.embedder = embedder
         self.loader = loader
         self.vector_store = vector_store
         self.profile_builder = profile_builder
         self.profile_repository = profile_repository
+        self.github_collector = github_collector
+        self.github_analyzer = github_analyzer
+        self.resume_parser = resume_parser
 
     def index_folder(self, dir_path: str) -> dict:
         documents = self.loader.load_folder(dir_path)
@@ -25,7 +31,20 @@ class IndexService:
         new_profiles = []
         for source, chunks in all_grouped.items():
             if not self.profile_repository.profile_exists(source):
-                profile = self.profile_builder.build_profile(chunks)
+                github_analysis = None
+                
+                if self.resume_parser and self.github_collector and self.github_analyzer:
+                    full_text = " ".join(chunks)
+                    github_username = self.resume_parser.extract_github_link(full_text)
+                    
+                    if github_username:
+                        try:
+                            github_data = asyncio.run(self.github_collector.collect_user_data(github_username))
+                            github_analysis = self.github_analyzer.analyze_code(github_data)
+                        except Exception as e:
+                            print(f"GitHub analysis failed for {source}: {e}")
+                
+                profile = self.profile_builder.build_profile(chunks, github_analysis)
                 self.profile_repository.create_profile(source, profile)
                 new_profiles.append(source)
 

@@ -10,6 +10,7 @@ from db.sqlite.migrations import init_db
 from db.vector_store import VectorStore
 from embedding.embedder import MistralEmbedder
 from ingestion.loader import ResumeLoader
+from ingestion.parser import ResumeParser
 from repositories.profile_repo import ProfileRepository
 from services.explainer import LLMExplainer
 from services.index_service import IndexService
@@ -17,6 +18,9 @@ from services.profile_builder import ProfileBuilder
 from services.query_service import QueryService
 from services.rate_limiter import RateLimiter
 from services.profile_reranker import ProfileReranker
+from github.mcp_client import GitHubMCPClient
+from github.collector import GitHubDataCollector
+from github.analyzer import GitHubCodeAnalyzer
 
 cfg = load_config()
 init_db()
@@ -29,22 +33,40 @@ rate_limiter = RateLimiter(min_interval=cfg["rate_limiter"]["min_interval"])
 embedder = MistralEmbedder(MISTRAL_API_KEY, model=cfg["embedder"]["model"], timeout=cfg["embedder"]["timeout"], rate_limiter=rate_limiter)
 explainer = LLMExplainer(MISTRAL_API_KEY, model=cfg["explainer"]["model"], timeout=cfg["explainer"]["timeout"], rate_limiter=rate_limiter)
 loader = ResumeLoader()
+parser = ResumeParser()
 profile_repository = ProfileRepository()
 profile_builder = ProfileBuilder(MISTRAL_API_KEY, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
 profile_reranker = ProfileReranker(MISTRAL_API_KEY, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter)
 client = chromadb.PersistentClient(path="./chromadb")
 vector_store = VectorStore(client)
 
-index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository)
+github_client = None
+github_collector = None
+github_analyzer = None
+
+try:
+    github_cfg = cfg.get("github", {})
+    if github_cfg and github_cfg.get("mcp_server_command"):
+        github_client = GitHubMCPClient(github_cfg["mcp_server_command"], github_cfg.get("env", {}))
+        github_collector = GitHubDataCollector(github_client)
+        github_analyzer = GitHubCodeAnalyzer(MISTRAL_API_KEY, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
+        print("GitHub MCP client initialized successfully")
+except Exception as e:
+    print(f"Failed to initialize GitHub MCP client: {e}")
+    print("Continuing without GitHub analysis...")
+
+index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
 query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    github_status = "enabled" if github_collector else "disabled"
     await update.message.reply_text(
         "I'm an AI recruiter. I search through indexed resumes to find the best candidates.\n\n"
         "Commands:\n"
         "/index <path> — index a folder with PDF resumes\n"
-        "Just send a message describing who you need — I'll find the best matches"
+        "Just send a message describing who you need — I'll find the best matches\n\n"
+        f"GitHub analysis: {github_status}"
     )
 
 
@@ -100,13 +122,30 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Search error: {e}")
 
 
+async def start_github_client():
+    if github_client:
+        await github_client.__aenter__()
+
+
+async def stop_github_client():
+    if github_client:
+        await github_client.__aexit__(None, None, None)
+
+
 def main():
     print("Bot started. Press Ctrl+C to stop.")
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("index", index))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    app.run_polling()
+    
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(start_github_client())
+    
+    try:
+        app.run_polling()
+    finally:
+        loop.run_until_complete(stop_github_client())
 
 
 if __name__ == "__main__":
