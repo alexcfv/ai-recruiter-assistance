@@ -1,5 +1,6 @@
 import asyncio
 import os
+from contextlib import AsyncExitStack
 
 import chromadb
 from telegram import Update
@@ -43,6 +44,7 @@ vector_store = VectorStore(client)
 github_client = None
 github_collector = None
 github_analyzer = None
+exit_stack = AsyncExitStack()
 
 # Lazy initialization - will be done in post_init
 _github_config = cfg.get("github", {})
@@ -67,13 +69,15 @@ query_service = QueryService(embedder, vector_store, explainer, profile_reposito
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     github_status = "enabled" if github_collector else "disabled"
-    await update.message.reply_text(
+    message = (
         "I'm an AI recruiter. I search through indexed resumes to find the best candidates.\n\n"
         "Commands:\n"
         "/index <path> — index a folder with PDF resumes\n"
         "Just send a message describing who you need — I'll find the best matches\n\n"
         f"GitHub analysis: {github_status}"
     )
+    await update.message.reply_text(message)
+
 
 
 async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -89,9 +93,8 @@ async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Indexing resumes... This may take a while.")
 
-    try:
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, index_service.index_folder, dir_path)
+    try:        
+        result = await index_service.index_folder(dir_path)
         await update.message.reply_text(
             f"Done!\n"
             f"Files: {result['total_files']}\n"
@@ -113,8 +116,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Searching for candidates...")
 
     try:
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, query_service.search, query)
+        result = await query_service.search(query)
 
         if not result["candidates"]:
             await update.message.reply_text("No candidates found.")
@@ -133,34 +135,21 @@ async def post_init(application: Application):
     if github_client:
         try:
             print("Starting GitHub MCP client...")
-            # Add timeout to prevent blocking bot startup
-            await asyncio.wait_for(github_client.__aenter__(), timeout=10.0)
+            await exit_stack.enter_async_context(github_client)
             print("GitHub MCP client started successfully")
-        except asyncio.TimeoutError:
-            print("GitHub MCP client startup timed out, continuing without GitHub analysis")
         except Exception as e:
             print(f"Failed to start GitHub MCP client: {e}")
             import traceback
             traceback.print_exc()
+            print("Continuing without GitHub analysis...")
     else:
         print("GitHub client not configured, skipping")
 
 
 async def post_shutdown(application: Application):
     print("post_shutdown called")
-    if github_client:
-        try:
-            print("Stopping GitHub MCP client...")
-            await asyncio.wait_for(github_client.__aexit__(None, None, None), timeout=5.0)
-            print("GitHub MCP client stopped successfully")
-        except asyncio.TimeoutError:
-            print("GitHub MCP client shutdown timed out")
-        except Exception as e:
-            print(f"Failed to stop GitHub MCP client: {e}")
-            import traceback
-            traceback.print_exc()
-    else:
-        print("GitHub client not configured, skipping")
+    await exit_stack.aclose()
+    print("Exit stack closed")
 
 
 def main():

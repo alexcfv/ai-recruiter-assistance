@@ -1,6 +1,3 @@
-import asyncio
-
-
 class IndexService:
     def __init__(self, embedder, loader, vector_store, profile_builder, profile_repository, github_collector=None, github_analyzer=None, resume_parser=None):
         self.embedder = embedder
@@ -12,7 +9,7 @@ class IndexService:
         self.github_analyzer = github_analyzer
         self.resume_parser = resume_parser
 
-    def index_folder(self, dir_path: str) -> dict:
+    async def index_folder(self, dir_path: str) -> dict:
         documents = self.loader.load_folder(dir_path)
 
         existing = set()
@@ -39,8 +36,7 @@ class IndexService:
                     
                     if github_username:
                         try:
-                            # Run async GitHub operations in a new event loop
-                            github_data = asyncio.run(self.github_collector.collect_user_data(github_username))
+                            github_data = await self.github_collector.collect_user_data(github_username)
                             github_analysis = self.github_analyzer.analyze_code(github_data)
                         except Exception as e:
                             print(f"GitHub analysis failed for {source}: {e}")
