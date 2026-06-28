@@ -23,6 +23,14 @@ def load_config(path: str = "config.yaml") -> dict:
     if not isinstance(min_interval, (int, float)) or min_interval <= 0:
         errors.append("rate_limiter.min_interval is missing or invalid")
 
+    github = cfg.get("github", {})
+    if github:
+        if not github.get("mcp_server_command"):
+            errors.append("github.mcp_server_command is missing")
+        env = github.get("env", {})
+        if not env.get("GITHUB_PERSONAL_ACCESS_TOKEN"):
+            print("Warning: github.env.GITHUB_PERSONAL_ACCESS_TOKEN is not set")
+
     if errors:
         print("Config validation failed:")
         for e in errors:

@@ -1,4 +1,5 @@
 import pdfplumber
+import re
 
 class ResumeParser:
     def parse_pdf(self, file_path: str) -> list[str]:
@@ -9,6 +10,20 @@ class ResumeParser:
                 text += page.extract_text() or ""
 
         return self.clean_text(text)
+    
+    def extract_github_link(self, text: str) -> str | None:
+        patterns = [
+            r'github\.com/([a-zA-Z0-9_-]+)',
+            r'github:\s*([a-zA-Z0-9_-]+)',
+            r'github\.com/([a-zA-Z0-9_-]+)/?'
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                username = match.group(1)
+                if username.lower() not in ['settings', 'repositories', 'explore', 'trending']:
+                    return username
+        return None
         
     def clean_text(self, text: str) -> list[str]:
         text = text.replace("\n", " ")

@@ -1,5 +1,6 @@
 import asyncio
 import os
+from contextlib import AsyncExitStack
 
 import chromadb
 from telegram import Update
@@ -10,6 +11,7 @@ from db.sqlite.migrations import init_db
 from db.vector_store import VectorStore
 from embedding.embedder import MistralEmbedder
 from ingestion.loader import ResumeLoader
+from ingestion.parser import ResumeParser
 from repositories.profile_repo import ProfileRepository
 from services.explainer import LLMExplainer
 from services.index_service import IndexService
@@ -17,6 +19,9 @@ from services.profile_builder import ProfileBuilder
 from services.query_service import QueryService
 from services.rate_limiter import RateLimiter
 from services.profile_reranker import ProfileReranker
+from github.mcp_client import GitHubMCPClient
+from github.collector import GitHubDataCollector
+from github.analyzer import GitHubCodeAnalyzer
 
 cfg = load_config()
 init_db()
@@ -29,23 +34,50 @@ rate_limiter = RateLimiter(min_interval=cfg["rate_limiter"]["min_interval"])
 embedder = MistralEmbedder(MISTRAL_API_KEY, model=cfg["embedder"]["model"], timeout=cfg["embedder"]["timeout"], rate_limiter=rate_limiter)
 explainer = LLMExplainer(MISTRAL_API_KEY, model=cfg["explainer"]["model"], timeout=cfg["explainer"]["timeout"], rate_limiter=rate_limiter)
 loader = ResumeLoader()
+parser = ResumeParser()
 profile_repository = ProfileRepository()
 profile_builder = ProfileBuilder(MISTRAL_API_KEY, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
 profile_reranker = ProfileReranker(MISTRAL_API_KEY, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter)
 client = chromadb.PersistentClient(path="./chromadb")
 vector_store = VectorStore(client)
 
-index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository)
+github_client = None
+github_collector = None
+github_analyzer = None
+exit_stack = AsyncExitStack()
+
+# Lazy initialization - will be done in post_init
+_github_config = cfg.get("github", {})
+_github_enabled = bool(_github_config and _github_config.get("mcp_server_command"))
+
+if _github_enabled:
+    try:
+        github_client = GitHubMCPClient(_github_config["mcp_server_command"], _github_config.get("env", {}))
+        github_collector = GitHubDataCollector(github_client)
+        github_analyzer = GitHubCodeAnalyzer(MISTRAL_API_KEY, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
+        print("GitHub MCP client created (will be started in post_init)")
+    except Exception as e:
+        print(f"Failed to create GitHub MCP client: {e}")
+        print("Continuing without GitHub analysis...")
+        github_client = None
+        github_collector = None
+        github_analyzer = None
+
+index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
 query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+    github_status = "enabled" if github_collector else "disabled"
+    message = (
         "I'm an AI recruiter. I search through indexed resumes to find the best candidates.\n\n"
         "Commands:\n"
         "/index <path> — index a folder with PDF resumes\n"
-        "Just send a message describing who you need — I'll find the best matches"
+        "Just send a message describing who you need — I'll find the best matches\n\n"
+        f"GitHub analysis: {github_status}"
     )
+    await update.message.reply_text(message)
+
 
 
 async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -61,9 +93,8 @@ async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Indexing resumes... This may take a while.")
 
-    try:
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, index_service.index_folder, dir_path)
+    try:        
+        result = await index_service.index_folder(dir_path)
         await update.message.reply_text(
             f"Done!\n"
             f"Files: {result['total_files']}\n"
@@ -85,8 +116,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Searching for candidates...")
 
     try:
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, query_service.search, query)
+        result = await query_service.search(query)
 
         if not result["candidates"]:
             await update.message.reply_text("No candidates found.")
@@ -94,18 +124,63 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(f"Results for: {query}")
         for i, c in enumerate(result["candidates"], 1):
-            text = f"{i}. {c['source']} (score: {c['score']:.4f})\n\n{c['explanation']}"
-            await update.message.reply_text(text)
+            text = f"<b>{i}. {c['source']}</b> (score: {c['score']:.4f})\n\n{c['explanation']}"
+            
+            profile = c.get("profile", {})
+            github = profile.get("github_analysis")
+            
+            if github:
+                if "error" in github:
+                    text += f"\n\n <i>GitHub Analysis: {github['error']}</i>"
+                else:
+                    text += (
+                        f"\n\n<b>GitHub Analysis:</b>\n"
+                        f"• <b>Quality:</b> {github.get('code_quality', 'N/A')}\n"
+                        f"• <b>Depth:</b> {github.get('technical_depth', 'N/A')}\n"
+                        f"• <b>Tech:</b> {', '.join(github.get('key_technologies', []))}\n"
+                        f"• <b>Summary:</b> {github.get('overall_assessment', 'N/A')}"
+                    )
+            
+            await update.message.reply_text(text, parse_mode="HTML")
     except Exception as e:
         await update.message.reply_text(f"Search error: {e}")
 
 
+async def post_init(application: Application):
+    print("post_init called")
+    if github_client:
+        try:
+            print("Starting GitHub MCP client...")
+            await exit_stack.enter_async_context(github_client)
+            print("GitHub MCP client started successfully")
+        except Exception as e:
+            print(f"Failed to start GitHub MCP client: {e}")
+            import traceback
+            traceback.print_exc()
+            print("Continuing without GitHub analysis...")
+    else:
+        print("GitHub client not configured, skipping")
+
+
+async def post_shutdown(application: Application):
+    print("post_shutdown called")
+    await exit_stack.aclose()
+    print("Exit stack closed")
+
+
 def main():
     print("Bot started. Press Ctrl+C to stop.")
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    app = (
+        Application.builder()
+        .token(TELEGRAM_BOT_TOKEN)
+        .post_init(post_init)
+        .post_shutdown(post_shutdown)
+        .build()
+    )
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("index", index))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
     app.run_polling()
 
 
