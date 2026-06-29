@@ -1,1 +1,1 @@
-MENU, SEARCHING = range(2)
+MENU, SEARCHING, ANALYTICS = range(3)

@@ -45,6 +45,15 @@ User query → embedding → ChromaDB (top-10 chunks) → group by file → embe
 **Stage C — Explanation**
 - For top-3 candidates: LLM explains the match in under 50 words (skills, company, tasks) and displays GitHub insights.
 
+### 3. Analytics flow
+
+```
+User question → fetch all profiles from SQLite → LLM analysis → answer
+```
+
+- The system retrieves all structured JSON profiles from the database.
+- A single LLM call processes the entire dataset to answer complex analytical questions (e.g., "How many candidates have a PhD?", "Compare candidates by experience level").
+
 **Mistral API calls budget:**
 
 **During Indexing (per 1 new resume):**
@@ -58,6 +67,10 @@ User query → embedding → ChromaDB (top-10 chunks) → group by file → embe
 - **1** rerank call (10 profiles + query → JSON ratings)
 - **3** explanation calls (one per top candidate)
 - *Total: **5** Mistral API calls per search*
+
+**During Analytics (per 1 question):**
+- **1** LLM call (all profiles + question → answer)
+- *Total: **1** Mistral API call per analytics question*
 
 ## Setup
 

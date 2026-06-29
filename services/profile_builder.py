@@ -13,6 +13,18 @@ class ProfileBuilder:
         )
         self.rate_limiter = rate_limiter
 
+    async def generate(self, prompt: str) -> str:
+        if self.rate_limiter:
+            self.rate_limiter.wait()
+            
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content or ""
+
     async def build_profile(self, chunks: list[str], github_analysis: dict = None) -> dict:
         context = "\n".join(chunks)
 

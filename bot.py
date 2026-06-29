@@ -19,6 +19,7 @@ from services.profile_builder import ProfileBuilder
 from services.query_service import QueryService
 from services.rate_limiter import RateLimiter
 from services.profile_reranker import ProfileReranker
+from services.analytics_service import AnalyticsService
 from github.mcp_client import GitHubMCPClient
 from github.collector import GitHubDataCollector
 from github.analyzer import GitHubCodeAnalyzer
@@ -38,6 +39,7 @@ parser = ResumeParser()
 profile_repository = ProfileRepository()
 profile_builder = ProfileBuilder(MISTRAL_API_KEY, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
 profile_reranker = ProfileReranker(MISTRAL_API_KEY, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter)
+analytics_service = AnalyticsService(profile_builder)
 client = chromadb.PersistentClient(path="./chromadb")
 vector_store = VectorStore(client)
 
@@ -66,8 +68,8 @@ if _github_enabled:
 index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
 query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
 
-from handlers.states import MENU, SEARCHING
-from handlers import menu, search
+from handlers.states import MENU, SEARCHING, ANALYTICS
+from handlers import menu, search, analytics
 
 
 async def prepare_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -161,6 +163,7 @@ async def post_init(application: Application):
     # Store services in bot_data for handlers to access
     application.bot_data["index_service"] = index_service
     application.bot_data["query_service"] = query_service
+    application.bot_data["analytics_service"] = analytics_service
     application.bot_data["vector_store"] = vector_store
     application.bot_data["github_enabled"] = _github_enabled
 
@@ -199,12 +202,17 @@ def main():
         states={
             MENU: [
                 MessageHandler(filters.Regex("^Find Candidate$"), menu.prepare_search),
+                MessageHandler(filters.Regex("^Database Analytics$"), menu.prepare_analytics),
                 MessageHandler(filters.Regex("^Status$"), menu.start),
             ],
             SEARCHING: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("^Cancel$"), search.handle_message),
                 MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
             ],
+    ANALYTICS: [
+        MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
+        MessageHandler(filters.TEXT & ~filters.COMMAND, analytics.handle_analytics),
+    ],
         },
         fallbacks=[CommandHandler("start", menu.start)],
     )
