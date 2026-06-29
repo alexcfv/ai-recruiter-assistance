@@ -1,10 +1,10 @@
 import os
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
-from handlers.states import MENU, SEARCHING
+from handlers.states import MENU, SEARCHING, ANALYTICS
 
 def get_main_menu_keyboard():
-    keyboard = [["Find Candidate"], ["Status"]]
+    keyboard = [["Find Candidate"], ["Database Analytics"], ["Status"]]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,6 +26,13 @@ async def prepare_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=ReplyKeyboardMarkup([["Cancel"]], resize_keyboard=True)
     )
     return SEARCHING
+
+async def prepare_analytics(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Please ask your question about the database (e.g., 'How many candidates have a PhD?'):",
+        reply_markup=ReplyKeyboardMarkup([["Cancel"]], resize_keyboard=True)
+    )
+    return ANALYTICS
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
