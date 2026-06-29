@@ -3,8 +3,8 @@ import os
 from contextlib import AsyncExitStack
 
 import chromadb
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 from config import load_config
 from db.sqlite.migrations import init_db
@@ -66,19 +66,23 @@ if _github_enabled:
 index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
 query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
 
+from handlers.states import MENU, SEARCHING
+from handlers import menu, search
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    github_status = "enabled" if github_collector else "disabled"
-    message = (
-        "I'm an AI recruiter. I search through indexed resumes to find the best candidates.\n\n"
-        "Commands:\n"
-        "/index <path> — index a folder with PDF resumes\n"
-        "Just send a message describing who you need — I'll find the best matches\n\n"
-        f"GitHub analysis: {github_status}"
+
+async def prepare_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Please enter the candidate description (e.g., 'Python developer with experience in asyncio'):",
+        reply_markup=ReplyKeyboardMarkup([["Cancel"]], resize_keyboard=True)
     )
-    await update.message.reply_text(message)
+    return SEARCHING
 
-
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Search cancelled.",
+        reply_markup=get_main_menu_keyboard()
+    )
+    return MENU
 
 async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
@@ -106,6 +110,7 @@ async def index(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if vector_store.collection.count() == 0:
         await update.message.reply_text(
             "No indexed resumes yet. Use /index first"
@@ -132,7 +137,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if github:
                 if "error" in github:
                     text += f"\n\n <i>GitHub Analysis: {github['error']}</i>"
-                else:
+                elif github.get('overall_assessment') not in [None, "None"]:
                     text += (
                         f"\n\n<b>GitHub Analysis:</b>\n"
                         f"• <b>Quality:</b> {github.get('code_quality', 'N/A')}\n"
@@ -141,13 +146,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         f"• <b>Summary:</b> {github.get('overall_assessment', 'N/A')}"
                     )
             
-            await update.message.reply_text(text, parse_mode="HTML")
+        await update.message.reply_text(text, parse_mode="HTML")
+        
+        await update.message.reply_text("What would you like to do next?", reply_markup=get_main_menu_keyboard())
+        return MENU
     except Exception as e:
-        await update.message.reply_text(f"Search error: {e}")
+        await update.message.reply_text(f"Search error: {e}", reply_markup=get_main_menu_keyboard())
+        return MENU
 
 
 async def post_init(application: Application):
     print("post_init called")
+    
+    # Store services in bot_data for handlers to access
+    application.bot_data["index_service"] = index_service
+    application.bot_data["query_service"] = query_service
+    application.bot_data["vector_store"] = vector_store
+    application.bot_data["github_enabled"] = _github_enabled
+
     if github_client:
         try:
             print("Starting GitHub MCP client...")
@@ -177,11 +193,27 @@ def main():
         .post_shutdown(post_shutdown)
         .build()
     )
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("index", index))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", menu.start)],
+        states={
+            MENU: [
+                MessageHandler(filters.Regex("^Find Candidate$"), menu.prepare_search),
+                MessageHandler(filters.Regex("^Status$"), menu.start),
+            ],
+            SEARCHING: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("^Cancel$"), search.handle_message),
+                MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
+            ],
+        },
+        fallbacks=[CommandHandler("start", menu.start)],
+    )
+
+    app.add_handler(conv_handler)
+    app.add_handler(CommandHandler("index", menu.index))
     
     app.run_polling()
+
 
 
 if __name__ == "__main__":

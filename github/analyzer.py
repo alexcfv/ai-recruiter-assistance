@@ -1,5 +1,6 @@
 from openai import AsyncOpenAI
 import json
+from models.prompts import GITHUB_ANALYZER_PROMPT
 
 
 class GitHubCodeAnalyzer:
@@ -18,26 +19,7 @@ class GitHubCodeAnalyzer:
 
         context = self._build_context(github_data)
 
-        prompt = f"""
-Analyze the following GitHub repositories and provide a BALANCED technical assessment of the developer.
-
-Return valid JSON with EXACTLY these fields:
-- "code_quality": string (max 15 words)
-- "technical_depth": string (max 15 words)
-- "architecture_patterns": list of strings
-- "key_technologies": list of strings
-- "overall_assessment": string (max 25 words)
-
-Rules:
-- BE BALANCED AND FAIR. Highlight both strengths and specific areas for improvement.
-- Avoid generic praise; be specific about what is good and what is lacking.
-- Assess technical depth based on the complexity of problems solved.
-- BE CONCISE. Use clear, professional language.
-- All string values use double quotes.
-
-GitHub Data:
-{context}
-"""
+        prompt = GITHUB_ANALYZER_PROMPT.format(context=context)
 
         if self.rate_limiter:
             self.rate_limiter.wait()
@@ -52,19 +34,10 @@ GitHub Data:
         )
         
         try:
-            return json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            return json.loads(content)
         except Exception as e:
             return {"error": f"Failed to parse LLM response: {e}"}
-
-        content = response.choices[0].message.content
-
-        if not content:
-            raise ValueError("Empty response from LLM")
-
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            raise ValueError(f"Invalid JSON from LLM: {content}")
 
     def _build_context(self, github_data: dict) -> str:
         context_parts = []

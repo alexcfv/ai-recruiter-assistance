@@ -1,0 +1,1 @@
+MENU, SEARCHING = range(2)

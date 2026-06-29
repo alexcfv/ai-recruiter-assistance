@@ -1,5 +1,6 @@
 from openai import AsyncOpenAI
 import json
+from models.prompts import PROFILE_BUILDER_PROMPT
 
 
 class ProfileBuilder:
@@ -27,25 +28,7 @@ GitHub Analysis:
 - Overall Assessment: {github_analysis.get('overall_assessment', 'N/A')}
 """
 
-        prompt = f"""
-Extract a structured candidate profile from the resume text below.
-
-Return valid JSON with EXACTLY these fields:
-- "summary": string
-- "skills": flat list of strings, e.g. ["Python", "Django", "FastAPI", "Docker"]
-- "experience": list of objects, each with "role", "company", "description"
-- "education": list of objects, each with "degree", "institution"
-- "projects": list of objects, each with "name", "description"
-- "github_analysis": object with fields "code_quality", "technical_depth", "architecture_patterns", "key_technologies", "overall_assessment" (if available, otherwise null)
-
-Rules:
-- "skills" MUST be a flat array of strings. NEVER group skills into categories.
-- All string values use double quotes.
-
-Resume:
-{context}
-{github_context}
-"""
+        prompt = PROFILE_BUILDER_PROMPT.format(context=context, github_context=github_context)
 
         if self.rate_limiter:
             self.rate_limiter.wait()
