@@ -1,5 +1,6 @@
 from openai import OpenAI
 from models.search_results import SearchResultItem
+from models.prompts import EXPLAINER_PROMPT
 
 class LLMExplainer:
     def __init__(self, api_key: str, model="mistral-small-2603", timeout=60, rate_limiter=None):
@@ -18,22 +19,7 @@ class LLMExplainer:
 
         context = "\n".join(candidate_chunks[:3])
 
-        prompt = f"""
-You are a technical recruiter. Given job requirements and candidate resume parts, respond in under 50 words.
-
-Summarize:
-- Key skills matched
-- Company they worked at
-- Relevant tasks/projects they handled
-
-Be concise. No fluff. No bullet points. One short paragraph.
-
-Job requirements:
-{query}
-
-Candidate resume parts:
-{context}
-"""
+        prompt = EXPLAINER_PROMPT.format(query=query, context=context)
 
         if self.rate_limiter:
             self.rate_limiter.wait()

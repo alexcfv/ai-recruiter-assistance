@@ -1,5 +1,6 @@
 from openai import AsyncOpenAI
 import json
+from models.prompts import GITHUB_ANALYZER_PROMPT
 
 
 class GitHubCodeAnalyzer:
@@ -18,29 +19,7 @@ class GitHubCodeAnalyzer:
 
         context = self._build_context(github_data)
 
-        prompt = f"""
-Analyze the following GitHub repositories and provide a BALANCED technical assessment of the developer.
-
-If the provided GitHub data is empty, insufficient, or contains no actual code/information, return a JSON where all string fields are "None" and all lists are empty.
-
-Return valid JSON with EXACTLY these fields:
-- "code_quality": string (max 15 words) or "None"
-- "technical_depth": string (max 15 words) or "None"
-- "architecture_patterns": list of strings (empty if none)
-- "key_technologies": list of strings (empty if none)
-- "overall_assessment": string (max 25 words) or "None"
-
-Rules:
-- BE BALANCED AND FAIR. Highlight both strengths and specific areas for improvement.
-- If you cannot make a fair assessment due to lack of data, set the field to "None".
-- Avoid generic praise; be specific about what is good and what is lacking.
-- Assess technical depth based on the complexity of problems solved.
-- BE CONCISE. Use clear, professional language.
-- All string values use double quotes.
-
-GitHub Data:
-{context}
-"""
+        prompt = GITHUB_ANALYZER_PROMPT.format(context=context)
 
         if self.rate_limiter:
             self.rate_limiter.wait()
