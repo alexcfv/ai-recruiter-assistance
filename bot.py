@@ -132,7 +132,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if github:
                 if "error" in github:
                     text += f"\n\n <i>GitHub Analysis: {github['error']}</i>"
-                else:
+                elif github.get('overall_assessment') not in [None, "None"]:
                     text += (
                         f"\n\n<b>GitHub Analysis:</b>\n"
                         f"• <b>Quality:</b> {github.get('code_quality', 'N/A')}\n"

@@ -21,15 +21,18 @@ class GitHubCodeAnalyzer:
         prompt = f"""
 Analyze the following GitHub repositories and provide a BALANCED technical assessment of the developer.
 
+If the provided GitHub data is empty, insufficient, or contains no actual code/information, return a JSON where all string fields are "None" and all lists are empty.
+
 Return valid JSON with EXACTLY these fields:
-- "code_quality": string (max 15 words)
-- "technical_depth": string (max 15 words)
-- "architecture_patterns": list of strings
-- "key_technologies": list of strings
-- "overall_assessment": string (max 25 words)
+- "code_quality": string (max 15 words) or "None"
+- "technical_depth": string (max 15 words) or "None"
+- "architecture_patterns": list of strings (empty if none)
+- "key_technologies": list of strings (empty if none)
+- "overall_assessment": string (max 25 words) or "None"
 
 Rules:
 - BE BALANCED AND FAIR. Highlight both strengths and specific areas for improvement.
+- If you cannot make a fair assessment due to lack of data, set the field to "None".
 - Avoid generic praise; be specific about what is good and what is lacking.
 - Assess technical depth based on the complexity of problems solved.
 - BE CONCISE. Use clear, professional language.
@@ -52,19 +55,10 @@ GitHub Data:
         )
         
         try:
-            return json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            return json.loads(content)
         except Exception as e:
             return {"error": f"Failed to parse LLM response: {e}"}
-
-        content = response.choices[0].message.content
-
-        if not content:
-            raise ValueError("Empty response from LLM")
-
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            raise ValueError(f"Invalid JSON from LLM: {content}")
 
     def _build_context(self, github_data: dict) -> str:
         context_parts = []
