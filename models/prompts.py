@@ -51,6 +51,7 @@ Summarize:
 - Relevant tasks/projects they handled
 
 Be concise. No fluff. No bullet points. One short paragraph.
+Keep in mind that we need a candidate strictly for the requested role; we don't need a senior developer for an intern position, and so on.
 
 Job requirements:
 {query}
