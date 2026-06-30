@@ -60,7 +60,7 @@ async def main():
 
 async def run_app(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser, explainer, profile_reranker):
     index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
-    query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
+    query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker, llm_client=profile_builder)
 
     dir_path = await asyncio.to_thread(input, "Enter resumes dir path: ")
     if dir_path:
@@ -70,6 +70,10 @@ async def run_app(embedder, loader, vector_store, profile_builder, profile_repos
     query = await asyncio.to_thread(input, "Enter search query: ")
     if query:
         search_result = await query_service.search(query)
+
+        if "error" in search_result:
+            print(f"\nValidation Error: {search_result['error']}")
+            return
 
         for c in search_result["candidates"]:
             print(f"\n--- {c['source']} (score: {c['score']:.4f}) ---")

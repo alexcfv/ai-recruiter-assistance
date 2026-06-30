@@ -20,10 +20,15 @@ AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral emb
 ### 2. Search flow
 
 ```
-User query → embedding → ChromaDB (top-10 chunks) → group by file → embedding_score → fetch profiles from SQLite → LLM rerank → final_score → explain top-3
+User query → LLM Validation → embedding → ChromaDB (top-10 chunks) → group by file → embedding_score → fetch profiles from SQLite → LLM rerank → final_score → explain top-3
 ```
 
+**Stage 0 — Validation (New)**
+- Query is analyzed by LLM to ensure it's a valid candidate search request.
+- Greetings, general questions, or irrelevant text are rejected with a polite explanation.
+
 **Stage A — Embedding retrieval**
+
 - Query is converted to a Mistral embedding
 - ChromaDB finds the 10 nearest chunks (by cosine distance)
 - Chunks are grouped by source filename
@@ -63,10 +68,11 @@ User question → fetch all profiles from SQLite → LLM analysis → answer
 - *Total: ~7-12 calls per resume*
 
 **During Search (per 1 query):**
+- **1** validation call (LLM check for relevance)
 - **1** embedding call (query → vector)
 - **1** rerank call (10 profiles + query → JSON ratings)
 - **3** explanation calls (one per top candidate)
-- *Total: **5** Mistral API calls per search*
+- *Total: **6** Mistral API calls per search*
 
 **During Analytics (per 1 question):**
 - **1** LLM call (all profiles + question → answer)

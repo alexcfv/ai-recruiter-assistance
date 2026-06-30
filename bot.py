@@ -66,7 +66,7 @@ if _github_enabled:
         github_analyzer = None
 
 index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
-query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker)
+query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker, llm_client=profile_builder)
 
 from handlers.states import MENU, SEARCHING, ANALYTICS
 from handlers import menu, search, analytics

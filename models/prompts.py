@@ -59,3 +59,23 @@ Job requirements:
 Candidate resume parts:
 {context}
 """
+
+QUERY_VALIDATOR_PROMPT = """
+Analyze if the following user query is a valid request to find a job candidate (IT specialist, developer, designer, etc.).
+
+A query is VALID if it contains:
+- Job titles (e.g., "Python developer", "Project Manager")
+- Specific skills (e.g., "React", "SQL", "Machine Learning")
+- Experience requirements (e.g., "3 years of experience", "senior")
+
+A query is INVALID if it is:
+- A greeting (e.g., "Hi", "Hello", "Привет")
+- A general question (e.g., "How are you?", "What can you do?")
+- Social talk or gibberish
+
+Return valid JSON with EXACTLY these fields:
+- "is_valid": boolean
+- "reason": string (a short explanation why the query is invalid, in the SAME LANGUAGE as the user query. If valid, leave empty)
+
+Query: {query}
+"""
