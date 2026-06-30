@@ -4,7 +4,7 @@ from contextlib import AsyncExitStack
 
 import chromadb
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, PicklePersistence
 
 from config import load_config
 from db.sqlite.migrations import init_db
@@ -189,16 +189,25 @@ async def post_shutdown(application: Application):
 
 def main():
     print("Bot started. Press Ctrl+C to stop.")
+
+    persistence = PicklePersistence(filepath="bot_persistence.pickle")
+    
     app = (
         Application.builder()
         .token(TELEGRAM_BOT_TOKEN)
+        .persistence(persistence)
         .post_init(post_init)
         .post_shutdown(post_shutdown)
         .build()
     )
     
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", menu.start)],
+        entry_points=[
+            CommandHandler("start", menu.start),
+            MessageHandler(filters.Regex("^Find Candidate$"), menu.prepare_search),
+            MessageHandler(filters.Regex("^Database Analytics$"), menu.prepare_analytics),
+            MessageHandler(filters.Regex("^Status$"), menu.start),
+        ],
         states={
             MENU: [
                 MessageHandler(filters.Regex("^Find Candidate$"), menu.prepare_search),
@@ -209,12 +218,14 @@ def main():
                 MessageHandler(filters.TEXT & ~filters.COMMAND & ~filters.Regex("^Cancel$"), search.handle_message),
                 MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
             ],
-    ANALYTICS: [
-        MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
-        MessageHandler(filters.TEXT & ~filters.COMMAND, analytics.handle_analytics),
-    ],
+            ANALYTICS: [
+                MessageHandler(filters.Regex("^Cancel$"), menu.cancel),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, analytics.handle_analytics),
+            ],
         },
         fallbacks=[CommandHandler("start", menu.start)],
+        name="main_conversation",
+        persistent=True
     )
 
     app.add_handler(conv_handler)
