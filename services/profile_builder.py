@@ -41,31 +41,32 @@ GitHub Analysis:
 """
 
         prompt = PROFILE_BUILDER_PROMPT.format(context=context, github_context=github_context)
+        profile = await self.complete(prompt, json_mode=True)
+        
+        if github_analysis:
+            profile["github_analysis"] = github_analysis
+        return profile
 
+    async def complete(self, prompt: str, json_mode: bool = False) -> any:
         if self.rate_limiter:
             self.rate_limiter.wait()
-            
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
 
+        kwargs = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+
+        response = await self.client.chat.completions.create(**kwargs)
         content = response.choices[0].message.content
 
         if not content:
             raise ValueError("Empty response from LLM")
 
-        try:
-            profile = json.loads(content)
-            print(f"DEBUG: ProfileBuilder received github_analysis: {github_analysis}")
-            if github_analysis:
-                print(f"DEBUG: Injecting github_analysis into profile (status: {'error' if 'error' in github_analysis else 'success'})")
-                profile["github_analysis"] = github_analysis
-            else:
-                print("DEBUG: github_analysis is None, nothing to inject")
-            return profile
-        except json.JSONDecodeError:
-            raise ValueError(f"Invalid JSON from LLM: {content}")
+        if json_mode:
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                raise ValueError(f"Invalid JSON from LLM: {content}")
+        return content

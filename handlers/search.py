@@ -24,6 +24,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         result = await query_service.search(query)
 
+        if result.get("error"):
+            await update.message.reply_text(result["error"], reply_markup=get_main_menu_keyboard())
+            return MENU
+
         if not result["candidates"]:
             await update.message.reply_text("No candidates found.", reply_markup=get_main_menu_keyboard())
             return MENU
