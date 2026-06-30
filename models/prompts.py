@@ -45,6 +45,8 @@ Resume:
 EXPLAINER_PROMPT = """
 You are a technical recruiter. Given job requirements and candidate resume parts, respond in under 50 words.
 
+IMPORTANT: Respond in the SAME LANGUAGE as the user's job requirements query.
+
 Summarize:
 - Key skills matched
 - Company they worked at
