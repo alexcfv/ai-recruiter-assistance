@@ -5,6 +5,7 @@
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector--db-yellow)
 
 AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral embeddings into ChromaDB, builds structured candidate profiles with LLM, performs deep GitHub code analysis via MCP, and finds the best match for any job query using two-stage ranking.
+### Supporting all languages
 
 ## How it works
 
