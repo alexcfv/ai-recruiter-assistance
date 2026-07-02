@@ -88,7 +88,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -e .
 cp config.example.yaml config.yaml
-# Edit config.yaml — insert your Mistral API key and Telegram bot token
+# Edit config.yaml — insert your Mistral API key, Telegram bot token and GitHub token for mcp
 python bot.py
 ```
 
