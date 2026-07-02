@@ -100,21 +100,26 @@ python bot.py
   **Message example:**
 
   ```bash
+  Intern Go developer with python experience.
   Tech stack:
-  Backend(main language): Golang.
-  Data Bases: PostgreSQL, Cassandra, ElasticSearch, Redis.
-  Infrastructure: Kafka, Kubernetes, Docker, gRPC.
-  Experience:  Java, Python.
+  Backend (main language): Golang.
+  Databases: PostgreSQL, Redis.
+  Infrastructure: Docker, REST API, gRPC, Git.
+  Experience: Python.
   ```
   ---
   **Answer example:**
   ```bash
-  CV_name.pdf (score: 0.174)
-  The candidate matches all backend and infrastructure requirements
-  (Golang, PostgreSQL, Kafka, Kubernetes, Docker, gRPC, Redis)
-  and has Java/Python experience. Worked at an NDA company as a Senior Golang Engineer,
-  leading DevOps, CI/CD pipelines, and high-load system architecture,
-  improving test coverage and release cycles.
-  Designed telemetry tools for 50K+ users.
+  1. Resume Alexey Kramskoi.pdf (score: 0.1635)
+  Alexey has Go and Python experience with PostgreSQL, REST APIs, and Docker, matching the intern role.
+  He built a sales analytics tool, integrated ML modules, and contributed to *awesome-go*.
+  His 7- month experience aligns with entry-level expectations.
+
+  GitHub Analysis:
+  • Quality: Moderate; lacks depth in examples/tests
+  • Depth: Basic to intermediate; good abstraction but limited validation
+  • Tech: Go, gopacket, libpcap, Telegram Bot API, scikit-learn, pandas
+  • Summary: Demonstrates versatility in network tools and ML integration
+    but needs stronger validation and documentation
   ```
 ## The more specific your request, the more accurate your answer will be.
