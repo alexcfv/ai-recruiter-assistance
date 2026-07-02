@@ -110,16 +110,13 @@ python bot.py
   ---
   **Answer example:**
   ```bash
-  1. Resume Alexey Kramskoi.pdf (score: 0.1635)
-  Alexey has Go and Python experience with PostgreSQL, REST APIs, and Docker, matching the intern role.
-  He built a sales analytics tool, integrated ML modules, and contributed to *awesome-go*.
-  His 7- month experience aligns with entry-level expectations.
-
-  GitHub Analysis:
-  • Quality: Moderate; lacks depth in examples/tests
-  • Depth: Basic to intermediate; good abstraction but limited validation
-  • Tech: Go, gopacket, libpcap, Telegram Bot API, scikit-learn, pandas
-  • Summary: Demonstrates versatility in network tools and ML integration
-    but needs stronger validation and documentation
+  The candidate matches the intern Go developer role with Python experience.
+  Key skills include Golang, Python (Flask, scikit-learn, pandas),
+  PostgreSQL, and REST/gRPC (implied by microservices).
+  
+  GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
+  network tools (gopacket/libpcap), and ML integration (scikit-learn).
+  Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
+  Achievements (hackathon wins, production ML integration) suggest practical exposure.
   ```
 ## The more specific your request, the more accurate your answer will be.
