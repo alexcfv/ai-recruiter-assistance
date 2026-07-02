@@ -45,12 +45,18 @@ class QueryService:
 
         candidates = []
         for source, score, explanation in reranked[:top_k]:
-            full_explanation = await asyncio.to_thread(self.explainer.explain, query, source, results)
+            profile_data = profiles.get(source, {}).get("profile", {})
+            if isinstance(profile_data, str):
+                profile_data = json.loads(profile_data)
+            
+            github_analysis = profile_data.get("github_analysis")
+            
+            full_explanation = await asyncio.to_thread(self.explainer.explain, query, source, results, github_analysis)
             candidates.append({
                 "source": source,
                 "score": score,
                 "explanation": full_explanation,
-                "profile": profiles.get(source, {}).get("profile", {}) if isinstance(profiles.get(source, {}).get("profile"), dict) else json.loads(profiles.get(source, {}).get("profile", "{}"))
+                "profile": profile_data
             })
 
         return {
