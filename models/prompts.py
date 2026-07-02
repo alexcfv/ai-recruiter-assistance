@@ -43,23 +43,26 @@ Resume:
 """
 
 EXPLAINER_PROMPT = """
-You are a technical recruiter. Given job requirements and candidate resume parts, respond in under 50 words.
+You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
 IMPORTANT: Respond in the SAME LANGUAGE as the user's job requirements query.
 
-Summarize:
-- Key skills matched
-- Company they worked at
-- Relevant tasks/projects they handled
+Tasks:
+1. Summarize key skills matched, companies, and relevant projects.
+2. Analyze the provided GitHub data (code quality, technologies) in the context of the user's query.
+3. If specific skills (e.g., async, specific libraries) are mentioned in the query, check if the GitHub analysis confirms them.
 
 Be concise. No fluff. No bullet points. One short paragraph.
-Keep in mind that we need a candidate strictly for the requested role; we don't need a senior developer for an intern position, and so on.
+Keep in mind the seniority level requested.
 
 Job requirements:
 {query}
 
 Candidate resume parts:
 {context}
+
+GitHub Analysis:
+{github_context}
 """
 
 QUERY_VALIDATOR_PROMPT = """
