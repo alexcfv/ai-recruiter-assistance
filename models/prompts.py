@@ -59,7 +59,7 @@ Candidate resume parts:
 GitHub Analysis:
 {github_context}
 
-Answer in user language.
+Answer strictly in the same language as the user's query(Job requirements) below.
 """
 
 
