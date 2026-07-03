@@ -51,6 +51,7 @@ Tasks:
 1. Summarize key skills matched, companies, and relevant projects.
 2. Analyze the provided GitHub data (code quality, technologies) in the context of the user's query.
 3. If specific skills (e.g., async, specific libraries) are mentioned in the query, check if the GitHub analysis confirms them.
+4. If the candidate is overqualified for the role, explicitly mention this as a risk that lowers their overall rating.
 
 Be concise. No fluff. No bullet points. One short paragraph.
 Keep in mind the seniority level requested.
