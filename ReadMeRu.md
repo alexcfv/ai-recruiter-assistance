@@ -100,7 +100,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -e .
 cp config.example.yaml config.yaml
-# Отредактируйте config.yaml — вставьте ваш API-ключ Mistral и токен Telegram-бота
+# Отредактируйте config.yaml — вставьте ваш API-ключ Mistral и токен Telegram-бота. Также в конфиге можно сменить модель на более обученную для получения лучшего результата.
 python bot.py
 ```
 
