@@ -102,6 +102,10 @@ pip install -e .
 cp config.example.yaml config.yaml
 # Edit config.yaml — insert your Mistral API key and GitHub token for mcp. You can also change the model in the config to a more advanced one for better results.
 python main.py
+
+cd frontend
+npm i
+npm run dev
 ```
 
 ## Usage (API)
@@ -135,6 +139,7 @@ Achievements (hackathon wins, production ML integration) suggest practical expos
 ```
 
 ### Database Analytics Example:
+**Db Analytics chat also have message history in llm context**
 
 **Question:**
 ```text
