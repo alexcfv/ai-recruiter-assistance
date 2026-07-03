@@ -25,7 +25,7 @@ const SEARCH_MESSAGES: Message[] = [
   {
     id: "s1",
     role: "assistant",
-    text: "👋 **Welcome to AI Recruiter Assistant!**\n\nI can help you find and analyze candidates from your database. Here is how to use me:\n\n🔍 **Search**\nJust type your requirements (e.g., \"Senior Python dev with FastAPI and Docker\"). I'll find the best matches and explain why they fit.\n\n📂 **Indexing**\nTo add new resumes, use the `/index` command followed by the path to a file or folder:\n• `/index ./resumes/new_candidate.pdf`\n• `/index /path/to/cv_folder`\n\n📊 **Scoring**\nNote that **lower score** means a **better match** (it represents the distance between the query and the candidate profile).\n\n💡 **Tips**\nBe specific about seniority, stack, and key skills for better results.",
+    text: "👋 **Welcome to AI Recruiter Assistant!**\n\nI can help you find and analyze candidates from your database. Here is how to use me:\n\n🔍 **Search**: Just type your requirements (e.g., \"Senior Python dev with FastAPI and Docker\"). I'll find the best matches and explain why they fit.\n\n📂 **Indexing**: To add new resumes, use the `/index` command followed by the path to a file or folder:\n`/index ./resumes/new_candidate.pdf`\n`/index /path/to/cv_folder`\n\n💡 **Tips**: Be specific about seniority, stack, and key skills for better results.",
     timestamp: new Date(),
   },
 ];
