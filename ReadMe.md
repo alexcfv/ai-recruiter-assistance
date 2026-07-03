@@ -111,6 +111,29 @@ The system provides a REST API for frontend interaction. Main endpoints:
 - `POST /api/search` — search for candidates
 - `POST /api/analytics` — analytical questions about the candidate database
 
+### Find Candidate Example:
+**Question:**
+```text
+Intern Go developer with python experience.
+Tech stack:
+Backend (main language): Golang.
+Databases: PostgreSQL, Redis.
+Infrastructure: Docker, REST API, gRPC, Git.
+Experience: Python.
+```
+
+ **System Response:**
+```text
+The candidate matches the intern Go developer role with Python experience.
+Key skills include Golang, Python (Flask, scikit-learn, pandas),
+PostgreSQL, and REST/gRPC (implied by microservices).
+  
+GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
+network tools (gopacket/libpcap), and ML integration (scikit-learn).
+Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
+Achievements (hackathon wins, production ML integration) suggest practical exposure.
+```
+
 ### Database Analytics Example:
 
 **Question:**
