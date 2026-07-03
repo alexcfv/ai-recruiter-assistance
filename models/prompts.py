@@ -45,7 +45,11 @@ Resume:
 EXPLAINER_PROMPT = """
 You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
-IMPORTANT: Respond in the SAME LANGUAGE as the user's job requirements query.
+CRITICAL INSTRUCTION: 
+- YOU MUST RESPOND ONLY IN THE LANGUAGE OF THE USER'S QUERY.
+- IF THE QUERY IS IN ENGLISH, YOUR ENTIRE RESPONSE MUST BE IN ENGLISH.
+- IF THE QUERY IS IN RUSSIAN, YOUR ENTIRE RESPONSE MUST BE IN RUSSIAN.
+- IGNORE THE LANGUAGE OF THE RESUME. EVEN IF THE RESUME IS IN RUSSIAN, IF THE QUERY IS IN ENGLISH, YOU MUST TRANSLATE THE KEY POINTS AND RESPOND IN ENGLISH.
 
 Tasks:
 1. Summarize key skills matched, companies, and relevant projects.
@@ -67,21 +71,20 @@ GitHub Analysis:
 """
 
 QUERY_VALIDATOR_PROMPT = """
+Return ONLY a valid JSON object. No preamble, no explanation.
+
 Analyze if the following user query is a valid request to find a job candidate (IT specialist, developer, designer, etc.).
 
-A query is VALID if it contains:
-- Job titles (e.g., "Python developer", "Project Manager")
-- Specific skills (e.g., "React", "SQL", "Machine Learning")
-- Experience requirements (e.g., "3 years of experience", "senior")
+A query is VALID if it contains job titles, specific skills, or experience requirements.
+A query is INVALID if it is a greeting, a general question, social talk, or gibberish.
 
-A query is INVALID if it is:
-- A greeting (e.g., "Hi", "Hello", "Привет")
-- A general question (e.g., "How are you?", "What can you do?")
-- Social talk or gibberish
+If INVALID, provide a polite response in the EXACT SAME LANGUAGE as the user's query. Explain that you are a specialized assistant for candidate search.
 
-Return valid JSON with EXACTLY these fields:
-- "is_valid": boolean
-- "reason": string (a short explanation why the query is invalid, in the SAME LANGUAGE as the user query. If valid, leave empty)
+Format:
+{{
+  "is_valid": boolean,
+  "reason": "string (polite refusal in user's language if invalid, else empty)"
+}}
 
 Query: {query}
 """

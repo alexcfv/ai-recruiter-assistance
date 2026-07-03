@@ -25,32 +25,8 @@ const SEARCH_MESSAGES: Message[] = [
   {
     id: "s1",
     role: "assistant",
-    text: "Hello! I'm your Recruiter Assistant. I can help you find top candidates, filter by skills, experience, location, or seniority. What kind of talent are you looking for today?",
-    timestamp: new Date(Date.now() - 420000),
-  },
-  {
-    id: "s2",
-    role: "user",
-    text: "Find me senior full-stack engineers with React and Node.js, based in Europe, with 5+ years experience.",
-    timestamp: new Date(Date.now() - 360000),
-  },
-  {
-    id: "s3",
-    role: "assistant",
-    text: "Found **47 candidates** matching your criteria. Here are the top matches:\n\n• **Alina Kovač** — 8 yrs · React, Node.js, TypeScript · Ljubljana, SI · Open to work\n• **Markus Heinz** — 6 yrs · React, Next.js, GraphQL · Berlin, DE · Actively looking\n• **Priya Nair** — 7 yrs · React, Node, AWS · Amsterdam, NL · Passive candidate\n• **Tomáš Novák** — 5 yrs · React, Express, PostgreSQL · Prague, CZ · Open to work\n\nShall I refine by salary range or company size preference?",
-    timestamp: new Date(Date.now() - 300000),
-  },
-  {
-    id: "s4",
-    role: "user",
-    text: "Show me only those with fintech experience and above €90k expectation.",
-    timestamp: new Date(Date.now() - 180000),
-  },
-  {
-    id: "s5",
-    role: "assistant",
-    text: "Narrowed to **12 candidates** with fintech background and €90k+ salary expectation.\n\n• **Alina Kovač** — Revolut alum · €105k expectation · Excellent match\n• **Markus Heinz** — N26, Commerzbank · €95k expectation · Strong match\n• **Priya Nair** — Adyen, ING · €110k expectation · Strong match\n\nWant me to draft outreach messages or schedule interview slots?",
-    timestamp: new Date(Date.now() - 60000),
+    text: "👋 **Welcome to AI Recruiter Assistant!**\n\nI can help you find and analyze candidates from your database. Here is how to use me:\n\n🔍 **Search**: Just type your requirements (e.g., \"Senior Python dev with FastAPI and Docker\"). I'll find the best matches and explain why they fit.\n\n📂 **Indexing**: To add new resumes, use the `/index` command followed by the path to a file or folder:\n`/index ./resumes/new_candidate.pdf`\n`/index /path/to/cv_folder`\n\n💡 **Tips**: Be specific about seniority, stack, and key skills for better results.",
+    timestamp: new Date(),
   },
 ];
 
@@ -58,32 +34,8 @@ const ANALYTICS_MESSAGES: Message[] = [
   {
     id: "a1",
     role: "assistant",
-    text: "Hi! I'm your DB Analytics assistant. Ask me anything about your candidate database — pipeline stats, sourcing channels, time-to-hire metrics, or funnel conversion rates.",
-    timestamp: new Date(Date.now() - 500000),
-  },
-  {
-    id: "a2",
-    role: "user",
-    text: "What's our current pipeline conversion rate this quarter?",
-    timestamp: new Date(Date.now() - 440000),
-  },
-  {
-    id: "a3",
-    role: "assistant",
-    text: "**Q2 2026 Pipeline Conversion (Apr–Jun)**\n\n```\nApplied      →  Screened     64.2%  (1,847 → 1,186)\nScreened     →  Interview    38.1%  (1,186 → 452)\nInterview    →  Offer        22.6%  (452 → 102)\nOffer        →  Hired        81.4%  (102 → 83)\n```\n\nOverall funnel: **4.5%** applied-to-hired. Up **+1.2pp** vs Q1. The interview-to-offer drop at 22.6% is your biggest bottleneck — want a breakdown by role?",
-    timestamp: new Date(Date.now() - 380000),
-  },
-  {
-    id: "a4",
-    role: "user",
-    text: "Yes, and also show me which sourcing channels are performing best.",
-    timestamp: new Date(Date.now() - 220000),
-  },
-  {
-    id: "a5",
-    role: "assistant",
-    text: "**Top Sourcing Channels — Q2 2026**\n\n```\nChannel          Leads   Hired   Conv.   Cost/Hire\nLinkedIn         893     31      3.5%    €1,240\nReferrals        214     28      13.1%   €380\nDirect outreach  301     15      5.0%    €820\nJob boards       639      9      1.4%    €2,100\n```\n\nReferrals are 3.7× more efficient than LinkedIn at 13.1% conversion. Recommend increasing referral incentive budget by €5k to scale that channel.",
-    timestamp: new Date(Date.now() - 90000),
+    text: "📊 **Welcome to DB Analytics!**\n\nI have access to your entire candidate database and can answer complex questions about your talent pool.\n\n**What you can ask:**\n• \"How many candidates have more than 5 years of experience with React?\"\n• \"List all candidates who know both Python and Go.\"\n• \"What is the most common technology in our database?\"\n• \"Give me a summary of candidates with experience in Fintech.\"\n\nI will analyze all profiles and provide a structured answer based on the data.",
+    timestamp: new Date(),
   },
 ];
 
@@ -178,7 +130,7 @@ function ChatPanel({ id, title, subtitle, icon, accentColor, placeholderText, in
     }
   }, [messages, isTyping]);
 
-  function sendMessage(text: string) {
+  async function sendMessage(text: string) {
     if (!text.trim()) return;
     const userMsg: Message = {
       id: `${id}-${Date.now()}`,
@@ -190,20 +142,74 @@ function ChatPanel({ id, title, subtitle, icon, accentColor, placeholderText, in
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const replies: Record<string, string> = {
-        search: "Searching the candidate database for your query... I found several strong matches. Would you like me to filter by availability or add any additional criteria?",
-        analytics: "Running the query against your database... Here are the latest statistics. The data shows clear trends worth discussing with your hiring team.",
-      };
+    try {
+      let endpoint = "";
+      let body = {};
+
+      if (id === "search" && text.startsWith("/index ")) {
+        endpoint = "/api/index/";
+        body = { path: text.replace("/index ", "").trim() };
+      } else {
+        endpoint = id === "search" ? "/api/search/" : "/api/analytics/";
+        body = id === "search" 
+          ? { query: text.trim(), top_k: 3 } 
+          : { question: text.trim() };
+      }
+
+      const response = await fetch(`http://localhost:8000${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to fetch from API");
+      }
+
+      const data = await response.json();
+      let replyText = "";
+
+      if (endpoint === "/api/index/") {
+        replyText = `✅ **Indexing Complete**\n\n` +
+          `• Files processed: **${data.files_processed}**\n` +
+          `• New profiles created: **${data.indexed_count}**\n` +
+          `• New text chunks: **${data.new_chunks}**\n\n` +
+          `${data.message}`;
+      } else if (id === "search") {
+        if (data.error) {
+          replyText = data.error;
+        } else if (data.candidates && data.candidates.length > 0) {
+          replyText = `Found **${data.candidates.length} candidates** matching your criteria:\n\n` +
+            data.candidates.map((c: any, i: number) => {
+              const fileName = c.source.split('/').pop();
+              return `**${i + 1}. ${fileName}** (score: ${c.score.toFixed(4)})\n\n${c.explanation}`;
+            }).join("\n\n---\n\n");
+        } else {
+          replyText = "No candidates found matching your request.";
+        }
+      } else {
+        replyText = data.answer || "No answer received.";
+      }
+
       const assistantMsg: Message = {
         id: `${id}-reply-${Date.now()}`,
         role: "assistant",
-        text: replies[id],
+        text: replyText,
         timestamp: new Date(),
       };
-      setIsTyping(false);
       setMessages((prev) => [...prev, assistantMsg]);
-    }, 1400 + Math.random() * 600);
+    } catch (error) {
+      const errorMsg: Message = {
+        id: `${id}-error-${Date.now()}`,
+        role: "assistant",
+        text: "Sorry, I encountered an error connecting to the server. Please make sure the backend is running.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsTyping(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {

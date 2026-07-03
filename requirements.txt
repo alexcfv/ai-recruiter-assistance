@@ -5,3 +5,4 @@ pdfplumber
 python-telegram-bot
 pyyaml
 mcp
+fastapi

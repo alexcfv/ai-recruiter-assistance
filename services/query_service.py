@@ -21,9 +21,34 @@ class QueryService:
         try:
             result = await self.llm_client.complete(prompt, json_mode=True)
             if isinstance(result, str):
-                result = json.loads(result)
+                clean_result = result.strip()
+                if clean_result.startswith("```"):
+                    clean_result = clean_result.split("\n", 1)[-1].rsplit("\n", 1)[0].strip()
+                if clean_result.startswith("json"):
+                    clean_result = clean_result[4:].strip()
+                result = json.loads(clean_result)
+            
+            if not isinstance(result, dict):
+                return {"is_valid": True, "reason": ""}
+                
             return result
         except Exception as e:
+            print(f"Validation error: {e}")
+            return {"is_valid": True, "reason": ""}
+
+        prompt = QUERY_VALIDATOR_PROMPT.format(query=query)
+        try:
+            result = await self.llm_client.complete(prompt, json_mode=True)
+            if isinstance(result, str):
+                clean_result = result.strip()
+                if clean_result.startswith("```"):
+                    clean_result = clean_result.split("\n", 1)[-1].rsplit("\n", 1)[0].strip()
+                if clean_result.startswith("json"):
+                    clean_result = clean_result[4:].strip()
+                result = json.loads(clean_result)
+            return result
+        except Exception as e:
+            print(f"Validation parsing error: {e}")
             return {"is_valid": True, "reason": ""}
 
     async def search(self, query: str, top_k: int = 3) -> dict:
