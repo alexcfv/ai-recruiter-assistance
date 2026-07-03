@@ -45,16 +45,10 @@ Resume:
 EXPLAINER_PROMPT = """
 You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
-IMPORTANT: Respond in the SAME LANGUAGE as the user's job requirements query.
-
 Tasks:
-1. Summarize key skills matched, companies, and relevant projects.
-2. Analyze the provided GitHub data (code quality, technologies) in the context of the user's query.
-3. If specific skills (e.g., async, specific libraries) are mentioned in the query, check if the GitHub analysis confirms them.
-4. If the candidate is overqualified for the role, explicitly mention this as a risk that lowers their overall rating.
-
-Be concise. No fluff. No bullet points. One short paragraph.
-Keep in mind the seniority level requested.
+1. Summarize matches and check GitHub evidence.
+2. Check for overqualification: Only mention it as a risk if the candidate has 5+ years of experience or held Senior/Lead roles, but is applying for an Intern/Junior position. 
+   - Note: Candidates with internships or <2 years of experience are NOT overqualified for Junior roles.
 
 Job requirements:
 {query}
@@ -64,24 +58,27 @@ Candidate resume parts:
 
 GitHub Analysis:
 {github_context}
+
+Answer strictly in the same language as the user's query(Job requirements) below.
 """
 
+
+
 QUERY_VALIDATOR_PROMPT = """
+Return ONLY a valid JSON object. No preamble, no explanation.
+
 Analyze if the following user query is a valid request to find a job candidate (IT specialist, developer, designer, etc.).
 
-A query is VALID if it contains:
-- Job titles (e.g., "Python developer", "Project Manager")
-- Specific skills (e.g., "React", "SQL", "Machine Learning")
-- Experience requirements (e.g., "3 years of experience", "senior")
+A query is VALID if it contains job titles, specific skills, or experience requirements.
+A query is INVALID if it is a greeting, a general question, social talk, or gibberish.
 
-A query is INVALID if it is:
-- A greeting (e.g., "Hi", "Hello", "Привет")
-- A general question (e.g., "How are you?", "What can you do?")
-- Social talk or gibberish
+If INVALID, provide a polite response in the EXACT SAME LANGUAGE as the user's query. Explain that you are a specialized assistant for candidate search.
 
-Return valid JSON with EXACTLY these fields:
-- "is_valid": boolean
-- "reason": string (a short explanation why the query is invalid, in the SAME LANGUAGE as the user query. If valid, leave empty)
+Format:
+{{
+  "is_valid": boolean,
+  "reason": "string (polite refusal in user's language if invalid, else empty)"
+}}
 
 Query: {query}
 """

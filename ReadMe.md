@@ -1,7 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Mistral](https://img.shields.io/badge/Mistral-API-orange)
-![Telegram](https://img.shields.io/badge/Telegram-bot-blue)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector--db-yellow)
 
 Languages:
@@ -10,7 +9,14 @@ Languages:
 
 ---
 
-AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral embeddings into ChromaDB, builds structured candidate profiles with LLM, performs deep GitHub code analysis via MCP, and finds the best match for any job query using two-stage ranking.
+AI-powered recruitment intelligence platform. It automates candidate sourcing by ingesting PDF resumes, performing deep GitHub code analysis via MCP (Machine Communication Protocol), and executing a multi-stage RAG (Retrieval-Augmented Generation) pipeline to match candidates against complex job requirements.
+
+## Key Technical Features
+
+- **Multi-Stage RAG Pipeline**: Combines semantic vector search with LLM-based re-ranking for optimal precision.
+- **Deep GitHub Integration**: Uses MCP to analyze actual code samples, repository structure, and contribution quality, integrating these insights directly into the candidate's professional profile. This allows the system to match resume claims with actual code evidence.
+- **Automated Profile Synthesis**: Generates structured JSON profiles from unstructured data (PDFs + GitHub), enabling complex analytical queries.
+- **Asynchronous Architecture**: Built on `FastAPI` and `asyncio` for high-performance, non-blocking data processing.
 ### Supporting all languages
 
 ## How it works
@@ -94,35 +100,56 @@ python -m venv venv
 source venv/bin/activate
 pip install -e .
 cp config.example.yaml config.yaml
-# Edit config.yaml — insert your Mistral API key, Telegram bot token and GitHub token for mcp
-python bot.py
+# Edit config.yaml — insert your Mistral API key and GitHub token for mcp
+python main.py
 ```
 
-## Commands
+## Usage (API)
 
-- `/index /path/to/resumes` — index PDFs and build profiles
-- Send any text message — search for candidates.
-  
-  **Message example:**
+The system provides a REST API for frontend interaction. Main endpoints:
+- `POST /api/index` — index PDFs and build profiles
+- `POST /api/search` — search for candidates
+- `POST /api/analytics` — analytical questions about the candidate database
 
-  ```bash
-  Intern Go developer with python experience.
-  Tech stack:
-  Backend (main language): Golang.
-  Databases: PostgreSQL, Redis.
-  Infrastructure: Docker, REST API, gRPC, Git.
-  Experience: Python.
-  ```
-  ---
-  **Answer example:**
-  ```bash
-  The candidate matches the intern Go developer role with Python experience.
-  Key skills include Golang, Python (Flask, scikit-learn, pandas),
-  PostgreSQL, and REST/gRPC (implied by microservices).
+### Find Candidate Example:
+**Question:**
+```text
+Intern Go developer with python experience.
+Tech stack:
+Backend (main language): Golang.
+Databases: PostgreSQL, Redis.
+Infrastructure: Docker, REST API, gRPC, Git.
+Experience: Python.
+```
+
+ **System Response:**
+```text
+The candidate matches the intern Go developer role with Python experience.
+Key skills include Golang, Python (Flask, scikit-learn, pandas),
+PostgreSQL, and REST/gRPC (implied by microservices).
   
-  GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
-  network tools (gopacket/libpcap), and ML integration (scikit-learn).
-  Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
-  Achievements (hackathon wins, production ML integration) suggest practical exposure.
-  ```
+GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
+network tools (gopacket/libpcap), and ML integration (scikit-learn).
+Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
+Achievements (hackathon wins, production ML integration) suggest practical exposure.
+```
+
+### Database Analytics Example:
+
+**Question:**
+```text
+Compare all candidates with Golang experience. Who has the best understanding of high-load architecture and verified GitHub code?
+```
+
+**System Response:**
+```text
+Based on the analysis of 15 profiles with Golang experience:
+1. Ivan I. (ivanov_dev): Highest score. The 'highload-starter' repository implements DB sharding and a custom worker pool. The code demonstrates a deep understanding of Go concurrency.
+2. Peter S. (spetrov): Good resume experience, but GitHub only contains forks. Architectural skills are only confirmed by the resume text.
+3. Alex S.: Senior experience, but GitHub code is mostly Python scripts; Go projects are missing.
+Recommendation: Ivan I. is the most suitable candidate.
+```
 ## The more specific your request, the more accurate your answer will be.
+
+## How it look like
+<img width="1893" height="942" alt="image" src="https://github.com/user-attachments/assets/3a974fa4-d697-4be1-b95a-43707d80ddf2" />

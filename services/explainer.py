@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI
 from models.search_results import SearchResultItem
 from models.prompts import EXPLAINER_PROMPT
@@ -19,15 +20,9 @@ class LLMExplainer:
 
         context = "\n".join(candidate_chunks[:3])
 
-        github_context = "No GitHub data available."
+        github_context = "None"
         if github_analysis and "error" not in github_analysis:
-            github_context = f"""
-- Code Quality: {github_analysis.get('code_quality', 'N/A')}
-- Technical Depth: {github_analysis.get('technical_depth', 'N/A')}
-- Architecture Patterns: {', '.join(github_analysis.get('architecture_patterns', []))}
-- Key Technologies: {', '.join(github_analysis.get('key_technologies', []))}
-- Overall Assessment: {github_analysis.get('overall_assessment', 'N/A')}
-"""
+            github_context = json.dumps(github_analysis, ensure_ascii=False, indent=2)
 
         prompt = EXPLAINER_PROMPT.format(
             query=query,
@@ -40,6 +35,7 @@ class LLMExplainer:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
+                {"role": "system", "content": "You are a technical recruiter. Answer in user language."}, 
                 {"role": "user", "content": prompt}
             ]
         )

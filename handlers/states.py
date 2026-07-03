@@ -1,1 +1,0 @@
-MENU, SEARCHING, ANALYTICS = range(3)

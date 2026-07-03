@@ -14,9 +14,9 @@ dependencies = [
     "requests",
     "openai",
     "pdfplumber",
-    "python-telegram-bot",
     "pyyaml",
     "mcp",
+    "fastapi",
 ]
 
 [tool.setuptools.packages.find]
