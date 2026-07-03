@@ -45,6 +45,11 @@ Resume:
 EXPLAINER_PROMPT = """
 You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
+Tasks:
+1. Summarize matches and check GitHub evidence.
+2. Check for overqualification: Only mention it as a risk if the candidate has 5+ years of experience or held Senior/Lead roles, but is applying for an Intern/Junior position. 
+   - Note: Candidates with internships or <2 years of experience are NOT overqualified for Junior roles.
+
 Job requirements:
 {query}
 
