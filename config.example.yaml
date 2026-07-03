@@ -1,6 +1,5 @@
 api:
   mistral_key: "your-mistral-api-key"
-  telegram_key: "your-telegram-bot-token"
 
 rate_limiter:
   min_interval: 1.2

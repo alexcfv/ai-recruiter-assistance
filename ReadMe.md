@@ -1,7 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Mistral](https://img.shields.io/badge/Mistral-API-orange)
-![Telegram](https://img.shields.io/badge/Telegram-bot-blue)
 ![ChromaDB](https://img.shields.io/badge/ChromaDB-vector--db-yellow)
 
 Languages:
@@ -94,35 +93,14 @@ python -m venv venv
 source venv/bin/activate
 pip install -e .
 cp config.example.yaml config.yaml
-# Edit config.yaml — insert your Mistral API key, Telegram bot token and GitHub token for mcp
-python bot.py
+# Edit config.yaml — insert your Mistral API key and GitHub token for mcp
+python main.py
 ```
 
-## Commands
+## Usage
 
-- `/index /path/to/resumes` — index PDFs and build profiles
-- Send any text message — search for candidates.
-  
-  **Message example:**
-
-  ```bash
-  Intern Go developer with python experience.
-  Tech stack:
-  Backend (main language): Golang.
-  Databases: PostgreSQL, Redis.
-  Infrastructure: Docker, REST API, gRPC, Git.
-  Experience: Python.
-  ```
-  ---
-  **Answer example:**
-  ```bash
-  The candidate matches the intern Go developer role with Python experience.
-  Key skills include Golang, Python (Flask, scikit-learn, pandas),
-  PostgreSQL, and REST/gRPC (implied by microservices).
-  
-  GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
-  network tools (gopacket/libpcap), and ML integration (scikit-learn).
-  Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
-  Achievements (hackathon wins, production ML integration) suggest practical exposure.
-  ```
+The system provides a REST API for frontend interaction. Main endpoints:
+- `POST /api/index` — index PDFs and build profiles
+- `POST /api/search` — search for candidates
+- `POST /api/analytics` — analytical questions about the candidate database
 ## The more specific your request, the more accurate your answer will be.
