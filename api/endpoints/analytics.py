@@ -11,7 +11,7 @@ async def ask_analytics(
     analytics_service: AnalyticsService = Depends(get_analytics_service)
 ):
     try:
-        answer = await analytics_service.answer_question(request.question)
+        answer = await analytics_service.answer_question(request.question, request.history)
         return AnalyticsResponse(question=request.question, answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

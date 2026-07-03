@@ -44,8 +44,13 @@ class SearchResponse(BaseModel):
     candidates: List[Candidate]
     error: Optional[str] = None
 
+class ChatMessage(BaseModel):
+    role: str = Field(..., example="user")
+    content: str = Field(..., example="How many candidates know React?")
+
 class AnalyticsRequest(BaseModel):
     question: str = Field(..., example="How many candidates know React?")
+    history: List[ChatMessage] = Field(default_factory=list)
 
 class AnalyticsResponse(BaseModel):
     question: str
