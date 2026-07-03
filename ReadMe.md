@@ -100,7 +100,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -e .
 cp config.example.yaml config.yaml
-# Edit config.yaml — insert your Mistral API key and GitHub token for mcp
+# Edit config.yaml — insert your Mistral API key and GitHub token for mcp. You can also change the model in the config to a more advanced one for better results.
 python main.py
 ```
 
