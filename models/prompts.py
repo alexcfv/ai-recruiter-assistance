@@ -45,21 +45,6 @@ Resume:
 EXPLAINER_PROMPT = """
 You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
-CRITICAL INSTRUCTION: 
-- YOU MUST RESPOND ONLY IN THE LANGUAGE OF THE USER'S QUERY.
-- IF THE QUERY IS IN ENGLISH, YOUR ENTIRE RESPONSE MUST BE IN ENGLISH.
-- IF THE QUERY IS IN RUSSIAN, YOUR ENTIRE RESPONSE MUST BE IN RUSSIAN.
-- IGNORE THE LANGUAGE OF THE RESUME. EVEN IF THE RESUME IS IN RUSSIAN, IF THE QUERY IS IN ENGLISH, YOU MUST TRANSLATE THE KEY POINTS AND RESPOND IN ENGLISH.
-
-Tasks:
-1. Summarize key skills matched, companies, and relevant projects.
-2. Analyze the provided GitHub data (code quality, technologies) in the context of the user's query.
-3. If specific skills (e.g., async, specific libraries) are mentioned in the query, check if the GitHub analysis confirms them.
-4. If the candidate is overqualified for the role, explicitly mention this as a risk that lowers their overall rating.
-
-Be concise. No fluff. No bullet points. One short paragraph.
-Keep in mind the seniority level requested.
-
 Job requirements:
 {query}
 
@@ -68,7 +53,11 @@ Candidate resume parts:
 
 GitHub Analysis:
 {github_context}
+
+Answer in user language.
 """
+
+
 
 QUERY_VALIDATOR_PROMPT = """
 Return ONLY a valid JSON object. No preamble, no explanation.

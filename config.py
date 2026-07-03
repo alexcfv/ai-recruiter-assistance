@@ -9,10 +9,9 @@ def load_config(path: str = "config.yaml") -> dict:
     errors = []
 
     api = cfg.get("api", {})
-    for key in ("mistral_key", "telegram_key"):
-        val = api.get(key, "")
-        if not val or "your-" in val:
-            errors.append(f"api.{key} is not configured")
+    val = api.get("mistral_key", "")
+    if not val or "your-" in val:
+        errors.append(f"api.mistral_key is not configured")
 
     for section in ("embedder", "explainer", "profile_builder", "reranker"):
         timeout = cfg.get(section, {}).get("timeout", 0)
