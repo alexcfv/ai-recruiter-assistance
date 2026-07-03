@@ -9,7 +9,14 @@ Languages:
 
 ---
 
-AI-powered resume search tool. Ingests PDF resumes, indexes them via Mistral embeddings into ChromaDB, builds structured candidate profiles with LLM, performs deep GitHub code analysis via MCP, and finds the best match for any job query using two-stage ranking.
+AI-powered recruitment intelligence platform. It automates candidate sourcing by ingesting PDF resumes, performing deep GitHub code analysis via MCP (Machine Communication Protocol), and executing a multi-stage RAG (Retrieval-Augmented Generation) pipeline to match candidates against complex job requirements.
+
+## Key Technical Features
+
+- **Multi-Stage RAG Pipeline**: Combines semantic vector search with LLM-based re-ranking for optimal precision.
+- **Deep GitHub Integration**: Uses MCP to analyze actual code samples, repository structure, and contribution quality, integrating these insights directly into the candidate's professional profile. This allows the system to match resume claims with actual code evidence.
+- **Automated Profile Synthesis**: Generates structured JSON profiles from unstructured data (PDFs + GitHub), enabling complex analytical queries.
+- **Asynchronous Architecture**: Built on `FastAPI` and `asyncio` for high-performance, non-blocking data processing.
 ### Supporting all languages
 
 ## How it works
@@ -97,10 +104,26 @@ cp config.example.yaml config.yaml
 python main.py
 ```
 
-## Usage
+## Usage (API)
 
 The system provides a REST API for frontend interaction. Main endpoints:
 - `POST /api/index` — index PDFs and build profiles
 - `POST /api/search` — search for candidates
 - `POST /api/analytics` — analytical questions about the candidate database
+
+### Database Analytics Example:
+
+**Question:**
+```text
+Compare all candidates with Golang experience. Who has the best understanding of high-load architecture and verified GitHub code?
+```
+
+**System Response:**
+```text
+Based on the analysis of 15 profiles with Golang experience:
+1. Ivan I. (ivanov_dev): Highest score. The 'highload-starter' repository implements DB sharding and a custom worker pool. The code demonstrates a deep understanding of Go concurrency.
+2. Peter S. (spetrov): Good resume experience, but GitHub only contains forks. Architectural skills are only confirmed by the resume text.
+3. Alex S.: Senior experience, but GitHub code is mostly Python scripts; Go projects are missing.
+Recommendation: Ivan I. is the most suitable candidate.
+```
 ## The more specific your request, the more accurate your answer will be.
