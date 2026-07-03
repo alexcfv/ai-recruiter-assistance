@@ -150,3 +150,6 @@ Based on the analysis of 15 profiles with Golang experience:
 Recommendation: Ivan I. is the most suitable candidate.
 ```
 ## The more specific your request, the more accurate your answer will be.
+
+## How it look like
+<img width="1893" height="942" alt="image" src="https://github.com/user-attachments/assets/3a974fa4-d697-4be1-b95a-43707d80ddf2" />
