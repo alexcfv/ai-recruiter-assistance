@@ -65,6 +65,8 @@ User query → LLM Validation → embedding → ChromaDB (top-10 chunks) → gro
 
 ### 3. Analytics flow
 
+> **Note**: Context and message history in the analytics chat are cleared after the page is refreshed.
+
 ```
 User question → fetch all profiles from SQLite → LLM analysis → answer
 ```
