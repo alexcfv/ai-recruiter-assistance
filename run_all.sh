@@ -6,6 +6,13 @@ NC='\033[0m'
 
 echo -e "${BLUE}Starting AI Recruiter Assistance Prototype...${NC}"
 
+# 0. Config setup
+if [ ! -f "config.yaml" ]; then
+    echo -e "${BLUE}Creating config.yaml from example...${NC}"
+    cp config.example.yaml config.yaml
+    echo -e "${BLUE}Please edit config.yaml and add your API keys!${NC}"
+fi
+
 # 1. Backend
 echo -e "${GREEN}Starting Backend API...${NC}"
 python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 &
