@@ -15,7 +15,7 @@ fi
 
 # 1. Backend
 echo -e "${GREEN}Starting Backend API...${NC}"
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+python3 -m uvicorn main:app --port 8000 &
 BACKEND_PID=$!
 
 # 2. Frontend
