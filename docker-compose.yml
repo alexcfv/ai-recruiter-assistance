@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000" # Backend API
+      - "5173:5173" # Frontend (Vite serve)
+    volumes:
+      - .:/app
+      - /app/frontend/node_modules
+      - /app/node_modules
+      - ./app.db:/app/app.db
+      - ./chromadb:/app/chromadb
+      - ./data/resumes:/app/data/resumes
+    env_file:
+      - .env
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
