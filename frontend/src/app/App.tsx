@@ -199,11 +199,11 @@ function ChatPanel({ id, title, subtitle, icon, accentColor, placeholderText, in
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (error) {
+    } catch (error: any) {
       const errorMsg: Message = {
         id: `${id}-error-${Date.now()}`,
         role: "assistant",
-        text: "Sorry, I encountered an error connecting to the server. Please make sure the backend is running.",
+        text: `❌ **Error**: ${error.message || "I encountered an error connecting to the server. Please make sure the backend is running."}`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMsg]);
