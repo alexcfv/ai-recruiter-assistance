@@ -14,15 +14,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy project files first to install dependencies
-COPY pyproject.toml . 
-RUN pip install -e .
-
-RUN if [ ! -f config.yaml ]; then cp config.example.yaml config.yaml; fi
-
 # Copy the entire project
 COPY . .
 
+# Install dependencies
+RUN pip install -e .
+
+# Make the startup script executable
 RUN chmod +x run_all.sh
 
 # Expose ports: 8000 (API) and 5173 (Frontend)
