@@ -30,7 +30,7 @@ fi
 npm install
 npm run build
 
-npx serve -s dist -l 5173 --host 0.0.0.0 &
+SERVE_HOST=0.0.0.0 npx serve -s dist -l 5173 &
 FRONTEND_PID=$!
 
 echo -e "${BLUE}All services started!${NC}"
