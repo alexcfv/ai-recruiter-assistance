@@ -1,6 +1,3 @@
-api:
-  mistral_key: "your-mistral-api-key"
-
 rate_limiter:
   min_interval: 1.2
 
@@ -22,5 +19,3 @@ reranker:
 
 github:
   mcp_server_command: "npx -y @modelcontextprotocol/server-github"
-  env:
-    GITHUB_PERSONAL_ACCESS_TOKEN: "YOUR_GITHUB_TOKEN"

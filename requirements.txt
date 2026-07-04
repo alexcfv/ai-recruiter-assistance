@@ -1,7 +1,0 @@
-chromadb
-requests
-openai
-pdfplumber
-pyyaml
-mcp
-fastapi
