@@ -15,7 +15,7 @@ fi
 
 # 1. Backend
 echo -e "${GREEN}Starting Backend API...${NC}"
-python3 -m uvicorn main:app --port 8000 &
+python3 -m uvicorn main:app --port 5173 &
 BACKEND_PID=$!
 
 # 2. Frontend
@@ -30,7 +30,7 @@ fi
 npm install
 npm run build
 
-npx serve -s dist -l 5173 &
+npx serve -s dist -l 8000 &
 FRONTEND_PID=$!
 
 echo -e "${BLUE}All services started!${NC}"
