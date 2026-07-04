@@ -94,6 +94,8 @@
 
 ## Установка
 
+### Локальная установка
+
 ```bash
 git clone https://github.com/alexcfv/resume-rag-ranker.git
 cd resume-rag-ranker
@@ -108,6 +110,25 @@ cd frontend
 npm i
 npm run dev
 ```
+
+### Запуск через Docker (Рекомендуется)
+
+Самый простой способ запустить весь стек (Бэкенд, Фронтенд и Бот) — использовать Docker Compose.
+
+1. **Настройка окружения:**
+   Скопируйте `config.example.yaml` в `config.yaml` и впишите свои API-ключи:
+   ```bash
+   cp config.example.yaml config.yaml
+   ```
+
+2. **Запуск:**
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Индексация резюме в Docker:**
+   Чтобы проиндексировать ваши резюме, поместите их в папку `./data/resumes` на вашем компьютере. Она автоматически монтируется в `/app/data/resumes` внутри контейнера.
+   При запуске индексации через интерфейс или бота указывайте путь: `/app/data/resumes`
 
 ## Использование (API)
 

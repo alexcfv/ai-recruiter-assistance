@@ -95,6 +95,8 @@ User question → fetch all profiles from SQLite → LLM analysis → answer
 
 ## Setup
 
+### Local Installation
+
 ```bash
 git clone https://github.com/alexcfv/resume-rag-ranker.git
 cd resume-rag-ranker
@@ -109,6 +111,24 @@ cd frontend
 npm i
 npm run dev
 ```
+
+### Docker Setup (Recommended)
+
+The easiest way to run the entire stack (Backend, Frontend, and Bot) is using Docker Compose.
+
+1. **Configure environment:**
+   Copy `config.example.yaml` to `config.yaml` and fill in your API keys:
+   ```bash
+   cp config.example.yaml config.yaml
+   ```
+
+2. **Run with Docker Compose:**
+   ```bash\n   docker-compose up --build
+   ```
+
+3. **Indexing Resumes in Docker:**
+   To index your resumes, place them in the `./data/resumes` folder on your host machine. It is automatically mounted to `/app/data/resumes` inside the container.
+   When using the UI or Bot to index, use the path: `/app/data/resumes`
 
 ## Usage (API)
 
