@@ -18,10 +18,11 @@ WORKDIR /app
 COPY pyproject.toml . 
 RUN pip install -e .
 
+RUN if [ ! -f config.yaml ]; then cp config.example.yaml config.yaml; fi
+
 # Copy the entire project
 COPY . .
 
-# Make the startup script executable
 RUN chmod +x run_all.sh
 
 # Expose ports: 8000 (API) and 5173 (Frontend)
