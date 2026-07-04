@@ -9,17 +9,17 @@ class GitHubAnalysis(BaseModel):
     overall_assessment: Optional[str] = Field(None, description="Overall technical assessment")
 
 class ExperienceItem(BaseModel):
-    role: str
-    company: str
-    description: str
+    role: Optional[str] = None
+    company: Optional[str] = None
+    description: Optional[str] = None
 
 class EducationItem(BaseModel):
-    degree: str
-    institution: str
+    degree: Optional[str] = None
+    institution: Optional[str] = None
 
 class ProjectItem(BaseModel):
-    name: str
-    description: str
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 class CandidateProfile(BaseModel):
     summary: Optional[str] = ""

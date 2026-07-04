@@ -43,6 +43,8 @@ Resume:
 """
 
 EXPLAINER_PROMPT = """
+ALWAYS answer in English. Ignore the language of the user's query and the candidate's resume.
+
 You are a technical recruiter. Given job requirements, candidate resume parts, and GitHub analysis, respond in under 60 words.
 
 Tasks:
@@ -59,7 +61,7 @@ Candidate resume parts:
 GitHub Analysis:
 {github_context}
 
-Answer strictly in the same language as the user's query(Job requirements) below.
+REMINDER: Answer strictly in English.
 """
 
 
