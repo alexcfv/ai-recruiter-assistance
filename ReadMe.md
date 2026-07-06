@@ -95,7 +95,27 @@ User question → fetch all profiles from SQLite → LLM analysis → answer
 
 ## Setup
 
-### Local Installation
+### Docker Setup (Recommended)
+
+The easiest way to run the entire stack (Backend, Frontend, and Bot) is using Docker Compose.
+
+1. **Configure environment:**
+   Create a `.env` file in the root directory and add your keys:
+   ```bash
+   MISTRAL_API_KEY=your_key
+   GITHUB_TOKEN=your_mcp_token
+   ```
+
+2. **Run with Docker Compose:**
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Indexing Resumes in Docker:**
+   Place your resumes in the `./data/resumes` folder on your host machine. It is automatically mounted to `/app/data/resumes` inside the container.
+   When using the UI or Bot to index, use the path: `/app/data/resumes`
+
+### Local Installation (for development)
 
 ```bash
 git clone https://github.com/alexcfv/resume-rag-ranker.git
@@ -103,32 +123,13 @@ cd resume-rag-ranker
 python -m venv venv
 source venv/bin/activate
 pip install -e .
-cp config.example.yaml config.yaml
-# Edit config.yaml — insert your Mistral API key and GitHub token for mcp. You can also change the model in the config to a more advanced one for better results.
+# Create .env file with keys (see above)
 python main.py
 
 cd frontend
 npm i
 npm run dev
 ```
-
-### Docker Setup (Recommended)
-
-The easiest way to run the entire stack (Backend, Frontend, and Bot) is using Docker Compose.
-
-1. **Configure environment:**
-   Copy `config.example.yaml` to `config.yaml` and fill in your API keys:
-   ```bash
-   cp config.example.yaml config.yaml
-   ```
-
-2. **Run with Docker Compose:**
-   ```bash\n   docker-compose up --build
-   ```
-
-3. **Indexing Resumes in Docker:**
-   To index your resumes, place them in the `./data/resumes` folder on your host machine. It is automatically mounted to `/app/data/resumes` inside the container.
-   When using the UI or Bot to index, use the path: `/app/data/resumes`
 
 ## Usage (API)
 
