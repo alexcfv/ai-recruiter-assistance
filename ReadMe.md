@@ -151,6 +151,7 @@ Experience: Python.
 
  **System Response:**
 ```text
+CV_name.pdf (score: 0.174)
 The candidate matches the intern Go developer role with Python experience.
 Key skills include Golang, Python (Flask, scikit-learn, pandas),
 PostgreSQL, and REST/gRPC (implied by microservices).
