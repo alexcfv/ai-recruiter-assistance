@@ -23,6 +23,8 @@
 
 ### 1. Индексация (`/index путь/к/резюме`)
 
+> **Важно**: Когда вы запускаете инструмент в первый раз или добавили новые резюме, вы должны написать в чат с поиском кандидата команду `/index <путь_к_резюме>`, чтобы проиндексировать новые файлы.
+
 - Сканирует папку на наличие файлов `.pdf`.
 - Извлекает текст через `pdfplumber`, разбивает на чанки по 500 символов с перекрытием в 100 символов.
 - Каждый чанк → эмбеддинг Mistral → сохраняется в ChromaDB (персистентная векторная БД).
@@ -141,7 +143,7 @@ npm run dev
 
 ### Пример поискового запроса:
 
-  ```bash
+  ```text
   Стек технологий:
   Бэкенд (основной язык): Golang.
   Базы данных: PostgreSQL, Cassandra, ElasticSearch, Redis.
@@ -150,14 +152,16 @@ npm run dev
   ```
   ---
   **Пример ответа:**
-  ```bash
-  CV_name.pdf (балл: 0.174)
-  Кандидат соответствует всем требованиям к бэкенду и инфраструктуре
-  (Golang, PostgreSQL, Kafka, Kubernetes, Docker, gRPC, Redis)
-  и имеет опыт работы с Java/Python. Работал в компании под NDA в качестве Senior Golang Engineer,
-  руководя DevOps, CI/CD пайплайнами и архитектурой высоконагруженных систем,
-  улучшая покрытие тестами и циклы релизов.
-  Разработал инструменты телеметрии для 50K+ пользователей.
+  ```text
+  CV_name.pdf (score: 0.174)
+  The candidate matches the intern Go developer role with Python experience.
+  Key skills include Golang, Python (Flask, scikit-learn, pandas),
+  PostgreSQL, and REST/gRPC (implied by microservices).
+  
+  GitHub shows moderate code quality with Go projects (e.g., go-pcaplite in *awesome-go*),
+  network tools (gopacket/libpcap), and ML integration (scikit-learn).
+  Python experience aligns with job requirements, but async/advanced Go features aren’t confirmed.
+  Achievements (hackathon wins, production ML integration) suggest practical exposure.   
   ```
 
 ### Пример аналитического запроса к БД:

@@ -23,6 +23,8 @@ AI-powered recruitment intelligence platform. It automates candidate sourcing by
 
 ### 1. Indexing (`/index path/to/resumes`)
 
+> **Important**: When you run the tool for the first time or add new resumes, you must send `/index <path_to_resumes>` in the candidate search chat to index the new files.
+
 - Scans a folder for `.pdf` files
 - Extracts text via `pdfplumber`, splits into 500-char chunks with 100-char overlap
 - Each chunk → Mistral embedding → stored in ChromaDB (persistent vector DB)
