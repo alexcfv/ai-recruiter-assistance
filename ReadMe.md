@@ -21,7 +21,7 @@ AI-powered recruitment intelligence platform. It automates candidate sourcing by
 
 ## How it works
 
-### 1. Indexing (`/index`)
+### 1. Indexing (`/index path/to/resumes`)
 
 - Scans a folder for `.pdf` files
 - Extracts text via `pdfplumber`, splits into 500-char chunks with 100-char overlap
