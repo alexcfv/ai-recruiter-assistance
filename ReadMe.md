@@ -81,7 +81,7 @@ User question → fetch all profiles from SQLite → LLM analysis → answer
 **During Indexing (per 1 new resume):**
 - **~5-10** embedding calls (depends on resume length)
 - **1** GitHub analysis call (if link found)
-- **1** Profile building call
+- **1** Profile building call (build short profile from resume and save into SQLite)
 - *Total: ~7-12 calls per resume*
 
 **During Search (per 1 query):**
