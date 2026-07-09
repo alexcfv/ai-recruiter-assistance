@@ -35,7 +35,7 @@ AI-powered recruitment intelligence platform. It automates candidate sourcing by
 ### 2. Search flow
 
 ```
-User query → LLM Validation → embedding → ChromaDB (top-10 chunks) → group by file → embedding_score → fetch profiles from SQLite → LLM rerank → final_score → explain top-3
+User query → LLM Validation → embedding → ChromaDB (top chunks) → group by file → top-10 candidates → fetch profiles from SQLite → LLM rerank → final_score → explain top-3
 ```
 
 **Stage 0 — Validation (New)**
@@ -45,8 +45,8 @@ User query → LLM Validation → embedding → ChromaDB (top-10 chunks) → gro
 **Stage A — Embedding retrieval**
 
 - Query is converted to a Mistral embedding
-- ChromaDB finds the 10 nearest chunks (by cosine distance)
-- Chunks are grouped by source filename
+- ChromaDB finds the nearest chunks (by cosine distance)
+- Chunks are grouped by source filename to identify the **top-10 candidates**
 - For each file: `embedding_score = 0.7 * best_chunk_distance + 0.3 * avg_chunk_distance`
 - **Lower embedding_score = better match** (distance ~0 = identical, ~1.0 = unrelated)
 
