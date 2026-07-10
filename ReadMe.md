@@ -114,7 +114,7 @@ The easiest way to run the entire stack (Backend, Frontend, and Bot) is using Do
    ```
 
 3. **Indexing Resumes in Docker:**
-   Place your resumes in the `./data/resumes` folder on your host machine. It is automatically mounted to `/app/data/resumes` inside the container.
+   Place your resumes in the `./data/resumes` folder on this project folder. It is automatically mounted to `/app/data/resumes` inside the container.
    When using the UI or Bot to index, use the path: `/app/data/resumes`
 
 ### Local Installation (for development)
