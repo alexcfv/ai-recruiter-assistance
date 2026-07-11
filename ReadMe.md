@@ -9,7 +9,7 @@ Languages:
 
 ---
 
-AI-powered recruitment intelligence platform. It automates candidate sourcing by ingesting PDF resumes, performing deep GitHub code analysis via MCP (Machine Communication Protocol), and executing a multi-stage RAG (Retrieval-Augmented Generation) pipeline to match candidates against complex job requirements.
+AI-powered recruitment intelligence tool. It automates candidate sourcing by ingesting PDF resumes, performing deep GitHub code analysis via MCP (Machine Communication Protocol), and executing a multi-stage RAG (Retrieval-Augmented Generation) pipeline to match candidates against complex job requirements.
 
 ## Key Technical Features
 
