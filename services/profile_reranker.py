@@ -1,5 +1,6 @@
 import litellm
 import json
+from models.prompts import RERANKER_PROMPT
 
 
 class ProfileReranker:
@@ -48,22 +49,8 @@ class ProfileReranker:
                 f"  Experience: {experience}"
             )
 
-        prompt = f"""You are a strict technical recruiter. Rate each candidate from 1 to 10 based on how well they fit the job.
-
-Job: {query}
-
-CRITICAL RULES FOR SCORING:
-1. OVERQUALIFICATION (STRICT): Only penalize if the candidate is a Senior, Lead, or has 5+ years of professional experience while the job is for an Intern/Junior. 
-   - 0-1 years of experience is PERFECT for Junior/Intern roles. DO NOT penalize them.
-   - If truly overqualified (Senior applying for Intern), subtract 5-7 points.
-2. SKILLS MATCH: Rate how well the technical stack matches the requirements.
-3. EXPERIENCE: Check if the candidate has the required years of experience.
-
-Return ONLY valid JSON with source as key and integer score as value. Example:
-{{"file1.pdf": 8, "file2.pdf": 3}}
-
-Candidates:
-{chr(10).join(f"{i+1}. {t}" for i, t in enumerate(profiles_text))}"""
+        candidates_text = chr(10).join(f"{i+1}. {t}" for i, t in enumerate(profiles_text))
+        prompt = RERANKER_PROMPT.format(query=query, candidates=candidates_text)
 
         if self.rate_limiter:
             self.rate_limiter.wait()
