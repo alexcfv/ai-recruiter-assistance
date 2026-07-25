@@ -1,27 +1,28 @@
-from openai import AsyncOpenAI
+import litellm
 import json
 from models.prompts import PROFILE_BUILDER_PROMPT
 
 
 class ProfileBuilder:
-    def __init__(self, api_key: str, model="mistral-small-latest", timeout=120, rate_limiter=None):
-        self.model = model
-        self.client = AsyncOpenAI(
-            api_key=api_key,
-            base_url="https://api.mistral.ai/v1",
-            timeout=timeout
-        )
+    def __init__(self, api_key: str, model="mistral-small-latest", timeout=120, rate_limiter=None, api_base=None):
+        self.model = f"mistral/{model}"
+        self.api_key = api_key
+        self.api_base = api_base
+        self.timeout = timeout
         self.rate_limiter = rate_limiter
 
     async def generate(self, prompt: str) -> str:
         if self.rate_limiter:
             self.rate_limiter.wait()
-            
-        response = await self.client.chat.completions.create(
+
+        response = await litellm.acompletion(
             model=self.model,
             messages=[
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            api_key=self.api_key,
+            api_base=self.api_base,
+            timeout=self.timeout,
         )
         return response.choices[0].message.content or ""
 
@@ -42,7 +43,7 @@ GitHub Analysis:
 
         prompt = PROFILE_BUILDER_PROMPT.format(context=context, github_context=github_context)
         profile = await self.complete(prompt, json_mode=True)
-        
+
         if github_analysis:
             profile["github_analysis"] = github_analysis
         return profile
@@ -53,12 +54,15 @@ GitHub Analysis:
 
         kwargs = {
             "model": self.model,
-            "messages": [{"role": "user", "content": prompt}]
+            "messages": [{"role": "user", "content": prompt}],
+            "api_key": self.api_key,
+            "api_base": self.api_base,
+            "timeout": self.timeout,
         }
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
 
-        response = await self.client.chat.completions.create(**kwargs)
+        response = await litellm.acompletion(**kwargs)
         content = response.choices[0].message.content
 
         if not content:

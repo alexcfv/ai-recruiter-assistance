@@ -14,13 +14,15 @@ def load_config(path: str = "config.yaml") -> dict:
 
     mistral_key = os.getenv("MISTRAL_API_KEY")
     github_token = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
+    llm_base_url = os.getenv("LLM_BASE_URL")
 
     if not mistral_key:
         errors.append("MISTRAL_API_KEY is not set in .env or environment")
-    
+
     if "api" not in cfg:
         cfg["api"] = {}
     cfg["api"]["mistral_key"] = mistral_key
+    cfg["api"]["llm_base_url"] = llm_base_url
 
     for section in ("embedder", "explainer", "profile_builder", "reranker"):
         timeout = cfg.get(section, {}).get("timeout", 0)

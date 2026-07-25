@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 dependencies = [
     "chromadb",
     "requests",
-    "openai",
+    "litellm",
     "pdfplumber",
     "pyyaml",
     "mcp",

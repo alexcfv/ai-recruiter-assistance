@@ -1,15 +1,13 @@
-from openai import OpenAI
+import litellm
 import json
 
 
 class ProfileReranker:
-    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None):
-        self.model = model
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.mistral.ai/v1",
-            timeout=timeout
-        )
+    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None, api_base=None):
+        self.model = f"mistral/{model}"
+        self.api_key = api_key
+        self.api_base = api_base
+        self.timeout = timeout
         self.rate_limiter = rate_limiter
 
     def rerank(
@@ -70,10 +68,13 @@ Candidates:
         if self.rate_limiter:
             self.rate_limiter.wait()
 
-        response = self.client.chat.completions.create(
+        response = litellm.completion(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
+            api_key=self.api_key,
+            api_base=self.api_base,
+            timeout=self.timeout,
         )
 
         content = response.choices[0].message.content or "{}"
