@@ -1,18 +1,17 @@
-from openai import OpenAI
+import litellm
 import json
+from models.prompts import RERANKER_PROMPT
 
 
 class ProfileReranker:
-    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None):
-        self.model = model
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.mistral.ai/v1",
-            timeout=timeout
-        )
+    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None, api_base=None):
+        self.model = f"mistral/{model}"
+        self.api_key = api_key
+        self.api_base = api_base
+        self.timeout = timeout
         self.rate_limiter = rate_limiter
 
-    def rerank(
+    async def rerank(
         self,
         query: str,
         ranked: list[tuple[str, float]],
@@ -50,30 +49,19 @@ class ProfileReranker:
                 f"  Experience: {experience}"
             )
 
-        prompt = f"""You are a strict technical recruiter. Rate each candidate from 1 to 10 based on how well they fit the job.
-
-Job: {query}
-
-CRITICAL RULES FOR SCORING:
-1. OVERQUALIFICATION (STRICT): Only penalize if the candidate is a Senior, Lead, or has 5+ years of professional experience while the job is for an Intern/Junior. 
-   - 0-1 years of experience is PERFECT for Junior/Intern roles. DO NOT penalize them.
-   - If truly overqualified (Senior applying for Intern), subtract 5-7 points.
-2. SKILLS MATCH: Rate how well the technical stack matches the requirements.
-3. EXPERIENCE: Check if the candidate has the required years of experience.
-
-Return ONLY valid JSON with source as key and integer score as value. Example:
-{{"file1.pdf": 8, "file2.pdf": 3}}
-
-Candidates:
-{chr(10).join(f"{i+1}. {t}" for i, t in enumerate(profiles_text))}"""
+        candidates_text = chr(10).join(f"{i+1}. {t}" for i, t in enumerate(profiles_text))
+        prompt = RERANKER_PROMPT.format(query=query, candidates=candidates_text)
 
         if self.rate_limiter:
             self.rate_limiter.wait()
 
-        response = self.client.chat.completions.create(
+        response = await litellm.acompletion(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            response_format={"type": "json_object"}
+            response_format={"type": "json_object"},
+            api_key=self.api_key,
+            api_base=self.api_base,
+            timeout=self.timeout,
         )
 
         content = response.choices[0].message.content or "{}"

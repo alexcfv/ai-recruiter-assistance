@@ -1,19 +1,17 @@
 import json
-from openai import OpenAI
+import litellm
 from models.search_results import SearchResultItem
 from models.prompts import EXPLAINER_PROMPT
 
 class LLMExplainer:
-    def __init__(self, api_key: str, model="mistral-small-2603", timeout=60, rate_limiter=None):
-        self.model = model
-        self.client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.mistral.ai/v1",
-            timeout=timeout
-        )
+    def __init__(self, api_key: str, model="mistral-small-2603", timeout=60, rate_limiter=None, api_base=None):
+        self.model = f"mistral/{model}"
+        self.api_key = api_key
+        self.api_base = api_base
+        self.timeout = timeout
         self.rate_limiter = rate_limiter
 
-    def explain(self, query: str, candidate: str, vectors: list[SearchResultItem], github_analysis: dict = None) -> str:
+    async def explain(self, query: str, candidate: str, vectors: list[SearchResultItem], github_analysis: dict = None) -> str:
         vectors.sort(key=lambda x: x.distance)
 
         candidate_chunks = [r.text for r in vectors if r.source == candidate]
@@ -32,12 +30,15 @@ class LLMExplainer:
 
         if self.rate_limiter:
             self.rate_limiter.wait()
-        response = self.client.chat.completions.create(
+        response = await litellm.acompletion(
             model=self.model,
             messages=[
-                {"role": "system", "content": "You are a technical recruiter. Answer in user language."}, 
+                {"role": "system", "content": "You are a technical recruiter. Answer in user language."},
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            api_key=self.api_key,
+            api_base=self.api_base,
+            timeout=self.timeout,
         )
 
         return response.choices[0].message.content

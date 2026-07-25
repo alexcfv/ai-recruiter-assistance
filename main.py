@@ -31,15 +31,16 @@ async def lifespan(app: FastAPI):
     cfg = load_config()
     init_db()
     api_key_mistral = cfg["api"]["mistral_key"]
+    llm_base_url = cfg["api"]["llm_base_url"]
     rate_limiter = RateLimiter(min_interval=cfg["rate_limiter"]["min_interval"])
 
-    embedder = MistralEmbedder(api_key_mistral, model=cfg["embedder"]["model"], timeout=cfg["embedder"]["timeout"], rate_limiter=rate_limiter)
-    explainer = LLMExplainer(api_key_mistral, model=cfg["explainer"]["model"], timeout=cfg["explainer"]["timeout"], rate_limiter=rate_limiter)
+    embedder = MistralEmbedder(api_key_mistral, model=cfg["embedder"]["model"], timeout=cfg["embedder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
+    explainer = LLMExplainer(api_key_mistral, model=cfg["explainer"]["model"], timeout=cfg["explainer"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
     loader = ResumeLoader()
     parser = ResumeParser()
     profile_repository = ProfileRepository()
-    profile_builder = ProfileBuilder(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
-    profile_reranker = ProfileReranker(api_key_mistral, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter)
+    profile_builder = ProfileBuilder(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
+    profile_reranker = ProfileReranker(api_key_mistral, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
     client = chromadb.PersistentClient(path="./chromadb")
     vector_store = VectorStore(client)
     
@@ -57,7 +58,7 @@ async def lifespan(app: FastAPI):
         try:
             await github_client.__aenter__()
             github_collector = GitHubDataCollector(github_client)
-            github_analyzer = GitHubCodeAnalyzer(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter)
+            github_analyzer = GitHubCodeAnalyzer(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
             app.state.github_client = github_client
             print("GitHub MCP client initialized successfully")
         except Exception as e:
