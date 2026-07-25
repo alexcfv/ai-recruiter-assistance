@@ -25,7 +25,7 @@ const SEARCH_MESSAGES: Message[] = [
   {
     id: "s1",
     role: "assistant",
-    text: "👋 **Welcome to AI Recruiter Assistant!**\n\nI can help you find and analyze candidates from your database. Use command /index /app/data/resumes for indexing resumes.\n\n🔍 **Search**: Just type your requirements (e.g., \"Senior Python dev with FastAPI and Docker\"). I'll find the best matches and explain why they fit.\n\n💡 **Tips**: Be specific about seniority, stack, and key skills for better results.",
+    text: "👋 **Welcome to AI Recruiter Assistant!**\n\nI can help you find and analyze candidates from your database. Use command /index /app/data/resumes for indexing resumes.\n\n🔍 **Search**: Just type your requirements (e.g., \"Senior Python dev with FastAPI and Docker\"). I'll find the best matches and explain why they fit.\n\n💡 **Tips**: Be specific about seniority, stack, and key skills for better results.\n\n **Indexing**: If you will start tool via docker, you must move all resumes into `./data/resumes` and use `/index app/data/resumes` for indexing.\n\n If you started it manually, use `/index /path/to/resumes`.",
     timestamp: new Date(),
   },
 ];
