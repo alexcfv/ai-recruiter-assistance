@@ -1,6 +1,0 @@
-chromadb
-requests
-openai
-pdfplumber
-python-telegram-bot
-pyyaml

@@ -21,10 +21,20 @@ class QueryService:
         try:
             result = await self.llm_client.complete(prompt, json_mode=True)
             if isinstance(result, str):
-                result = json.loads(result)
+                clean_result = result.strip()
+                if clean_result.startswith("```"):
+                    clean_result = clean_result.split("\n", 1)[-1].rsplit("\n", 1)[0].strip()
+                if clean_result.startswith("json"):
+                    clean_result = clean_result[4:].strip()
+                result = json.loads(clean_result)
+            
+            if not isinstance(result, dict):
+                return {"is_valid": False, "reason": "LLM returned invalid format"}
+                
             return result
         except Exception as e:
-            return {"is_valid": True, "reason": ""}
+            print(f"Validation error: {e}")
+            return {"is_valid": False, "reason": f"LLM Error: {str(e)}"}
 
     async def search(self, query: str, top_k: int = 3) -> dict:
         validation = await self._validate_query(query)

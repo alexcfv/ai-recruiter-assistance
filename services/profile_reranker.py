@@ -55,9 +55,11 @@ class ProfileReranker:
 Job: {query}
 
 CRITICAL RULES FOR SCORING:
-1. If a candidate's experience and seniority significantly EXCEED the requirements (Overqualification), you MUST penalize the score by 2-3 points. Overqualified candidates are a flight risk and may lack motivation.
-2. If a candidate lacks key required skills, penalize heavily.
-3. High quality GitHub code and relevant projects should boost the score.
+1. OVERQUALIFICATION (STRICT): Only penalize if the candidate is a Senior, Lead, or has 5+ years of professional experience while the job is for an Intern/Junior. 
+   - 0-1 years of experience is PERFECT for Junior/Intern roles. DO NOT penalize them.
+   - If truly overqualified (Senior applying for Intern), subtract 5-7 points.
+2. SKILLS MATCH: Rate how well the technical stack matches the requirements.
+3. EXPERIENCE: Check if the candidate has the required years of experience.
 
 Return ONLY valid JSON with source as key and integer score as value. Example:
 {{"file1.pdf": 8, "file2.pdf": 3}}
