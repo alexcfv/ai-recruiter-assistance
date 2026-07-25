@@ -22,7 +22,7 @@ class IndexService:
         new_docs = [d for d in documents if d["source"] not in existing]
 
         if new_docs:
-            self.vector_store.add_documents(new_docs, self.embedder)
+            await self.vector_store.add_documents(new_docs, self.embedder)
 
         all_grouped = self.vector_store.get_all_grouped_by_source()
         new_profiles = []

@@ -27,10 +27,10 @@ class QueryService:
                 if clean_result.startswith("json"):
                     clean_result = clean_result[4:].strip()
                 result = json.loads(clean_result)
-            
+
             if not isinstance(result, dict):
                 return {"is_valid": False, "reason": "LLM returned invalid format"}
-                
+
             return result
         except Exception as e:
             print(f"Validation error: {e}")
@@ -45,23 +45,23 @@ class QueryService:
                 "error": validation.get("reason", "Invalid query")
             }
 
-        results = await asyncio.to_thread(self.vector_store.search, query, self.embedder, k=10)
+        results = await self.vector_store.search(query, self.embedder, k=10)
         ranked = find_best_candidates(results)
 
         sources = [s for s, _ in ranked]
         profiles = await asyncio.to_thread(self.profile_repository.get_by_sources, sources)
 
-        reranked = await asyncio.to_thread(self.profile_reranker.rerank, query, ranked, profiles)
+        reranked = await self.profile_reranker.rerank(query, ranked, profiles)
 
         candidates = []
         for source, score, explanation in reranked[:top_k]:
             profile_data = profiles.get(source, {}).get("profile", {})
             if isinstance(profile_data, str):
                 profile_data = json.loads(profile_data)
-            
+
             github_analysis = profile_data.get("github_analysis")
-            
-            full_explanation = await asyncio.to_thread(self.explainer.explain, query, source, results, github_analysis)
+
+            full_explanation = await self.explainer.explain(query, source, results, github_analysis)
             candidates.append({
                 "source": source,
                 "score": score,

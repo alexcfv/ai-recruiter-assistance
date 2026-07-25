@@ -11,7 +11,7 @@ class LLMExplainer:
         self.timeout = timeout
         self.rate_limiter = rate_limiter
 
-    def explain(self, query: str, candidate: str, vectors: list[SearchResultItem], github_analysis: dict = None) -> str:
+    async def explain(self, query: str, candidate: str, vectors: list[SearchResultItem], github_analysis: dict = None) -> str:
         vectors.sort(key=lambda x: x.distance)
 
         candidate_chunks = [r.text for r in vectors if r.source == candidate]
@@ -30,7 +30,7 @@ class LLMExplainer:
 
         if self.rate_limiter:
             self.rate_limiter.wait()
-        response = litellm.completion(
+        response = await litellm.acompletion(
             model=self.model,
             messages=[
                 {"role": "system", "content": "You are a technical recruiter. Answer in user language."},

@@ -7,9 +7,9 @@ class VectorStore:
     def __init__(self, client):
         self.collection = client.get_or_create_collection("resumes")
 
-    def add_documents(self, documents, embedder):
+    async def add_documents(self, documents, embedder):
         texts = [doc["chunk"] for doc in documents]
-        embeddings = embedder.embed_batch(texts)
+        embeddings = await embedder.embed_batch(texts)
 
         ids = []
         metadatas = []
@@ -40,8 +40,8 @@ class VectorStore:
 
         return grouped
 
-    def search(self, query: str, embedder, k: int = 15) -> list[SearchResultItem]:
-        query_embedding = embedder.embed_batch([query])[0]
+    async def search(self, query: str, embedder, k: int = 15) -> list[SearchResultItem]:
+        query_embedding = (await embedder.embed_batch([query]))[0]
 
         results = self.collection.query(
             query_embeddings=[query_embedding],

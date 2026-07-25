@@ -11,7 +11,7 @@ class ProfileReranker:
         self.timeout = timeout
         self.rate_limiter = rate_limiter
 
-    def rerank(
+    async def rerank(
         self,
         query: str,
         ranked: list[tuple[str, float]],
@@ -55,7 +55,7 @@ class ProfileReranker:
         if self.rate_limiter:
             self.rate_limiter.wait()
 
-        response = litellm.completion(
+        response = await litellm.acompletion(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},

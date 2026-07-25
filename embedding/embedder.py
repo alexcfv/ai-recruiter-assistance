@@ -8,10 +8,10 @@ class MistralEmbedder:
         self.timeout = timeout
         self.rate_limiter = rate_limiter
 
-    def embed(self, text: str) -> list[float]:
+    async def embed(self, text: str) -> list[float]:
         if self.rate_limiter:
             self.rate_limiter.wait()
-        response = litellm.embedding(
+        response = await litellm.aembedding(
             model=self.model,
             input=text,
             api_key=self.api_key,
@@ -20,7 +20,7 @@ class MistralEmbedder:
         )
         return response.data[0]["embedding"]
 
-    def embed_batch(self, texts: list[str], batch_size=32) -> list[list[float]]:
+    async def embed_batch(self, texts: list[str], batch_size=32) -> list[list[float]]:
         all_embeddings = []
 
         for i in range(0, len(texts), batch_size):
@@ -28,7 +28,7 @@ class MistralEmbedder:
 
             if self.rate_limiter:
                 self.rate_limiter.wait()
-            response = litellm.embedding(
+            response = await litellm.aembedding(
                 model=self.model,
                 input=batch,
                 api_key=self.api_key,
