@@ -151,9 +151,14 @@ function ChatPanel({ id, title, subtitle, icon, accentColor, placeholderText, in
         body = { path: text.replace("/index ", "").trim() };
       } else {
         endpoint = id === "search" ? "/api/search/" : "/api/analytics/";
-        body = id === "search" 
-          ? { query: text.trim(), top_k: 3 } 
-          : { question: text.trim() };
+        if (id === "search") {
+          body = { query: text.trim(), top_k: 3 };
+        } else {
+          const history = messages
+            .filter((m) => m.role === "user" || m.role === "assistant")
+            .map((m) => ({ role: m.role, content: m.text }));
+          body = { question: text.trim(), history };
+        }
       }
 
       const response = await fetch(`${endpoint}`, {
