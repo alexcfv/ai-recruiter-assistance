@@ -24,8 +24,9 @@ class AnalyticsService:
         
         history_str = ""
         if history:
+            recent_history = history[-5:]
             history_str = "\nPrevious conversation history:\n"
-            for msg in history:
+            for msg in recent_history:
                 role = "User" if msg.role == "user" else "Assistant"
                 history_str += f"{role}: {msg.content}\n"
 
