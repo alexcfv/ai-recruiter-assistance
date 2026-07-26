@@ -67,7 +67,7 @@ User query → LLM Validation → embedding → ChromaDB (top chunks) → group 
 
 ### 3. Analytics flow
 
-> **Note**: Context and message history in the analytics chat are cleared after the page is refreshed.
+> **Note**: Context and message history in the analytics chat are cleared after the page is refreshed. We also store only the last 5 chat messages to conserve context.
 
 ```
 User question → fetch all profiles from SQLite → LLM analysis → answer
