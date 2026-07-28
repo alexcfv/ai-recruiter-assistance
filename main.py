@@ -3,6 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 from embedding.embedder import MistralEmbedder
 from db.vector_store import VectorStore
@@ -60,9 +68,9 @@ async def lifespan(app: FastAPI):
             github_collector = GitHubDataCollector(github_client)
             github_analyzer = GitHubCodeAnalyzer(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
             app.state.github_client = github_client
-            print("GitHub MCP client initialized successfully")
+            logger.info("GitHub MCP client initialized successfully")
         except Exception as e:
-            print(f"Failed to initialize GitHub MCP client: {e}")
+            logger.error("Failed to initialize GitHub MCP client: %s", e)
 
     app.state.index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
     app.state.query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker, llm_client=profile_builder)

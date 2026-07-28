@@ -1,6 +1,8 @@
-import asyncio
 import json
+import logging
 from github.mcp_client import GitHubMCPClient
+
+logger = logging.getLogger(__name__)
 
 
 class GitHubDataCollector:
@@ -39,7 +41,8 @@ class GitHubDataCollector:
                 if readme_response and readme_response.content:
                     readme_data = json.loads(readme_response.content[0].text)
                     repo_info["readme"] = readme_data.get("content", "")[:2000]
-            except:
+            except Exception as e:
+                logger.warning("Failed to fetch README for %s/%s: %s", repo_owner, repo_name, e)
                 repo_info["readme"] = ""
 
             try:
@@ -60,10 +63,10 @@ class GitHubDataCollector:
                                     "path": file_path,
                                     "content": file_data.get("content", "")[:1500]
                                 })
-                        except:
-                            pass
-            except:
-                pass
+                        except Exception as e:
+                            logger.warning("Failed to fetch file %s from %s/%s: %s", file_path, repo_owner, repo_name, e)
+            except Exception as e:
+                logger.warning("Failed to list repository tree for %s/%s: %s", repo_owner, repo_name, e)
 
             collected_data["repositories"].append(repo_info)
 
