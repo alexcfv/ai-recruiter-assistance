@@ -1,12 +1,17 @@
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/frontend
+
+COPY frontend/ .
+
+RUN npm install && npm run build && rm -rf node_modules
+
 FROM python:3.11-slim
 
 RUN apt-get update && apt-get install -y \
-    curl \
     libmagic1 \
     poppler-utils \
     tesseract-ocr \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -14,9 +19,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install -e . && \
-    cd frontend && npm install && npm run build && \
-    rm -rf node_modules && cd ..
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+RUN pip install -e .
 
 RUN chmod +x run_all.sh
 
