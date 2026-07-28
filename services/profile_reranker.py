@@ -1,10 +1,11 @@
-import litellm
 import json
+import litellm
 from models.prompts import RERANKER_PROMPT
+from services.rate_limiter import RateLimiter
 
 
 class ProfileReranker:
-    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None, api_base=None):
+    def __init__(self, api_key: str, model: str = "mistral-small-2603", timeout: int = 120, rate_limiter: RateLimiter | None = None, api_base: str | None = None) -> None:
         self.model = f"mistral/{model}"
         self.api_key = api_key
         self.api_base = api_base

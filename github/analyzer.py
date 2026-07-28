@@ -1,10 +1,11 @@
-import litellm
 import json
+import litellm
 from models.prompts import GITHUB_ANALYZER_PROMPT
+from services.rate_limiter import RateLimiter
 
 
 class GitHubCodeAnalyzer:
-    def __init__(self, api_key: str, model="mistral-small-latest", timeout=120, rate_limiter=None, api_base=None):
+    def __init__(self, api_key: str, model: str = "mistral-small-latest", timeout: int = 120, rate_limiter: RateLimiter | None = None, api_base: str | None = None) -> None:
         self.model = f"mistral/{model}"
         self.api_key = api_key
         self.api_base = api_base

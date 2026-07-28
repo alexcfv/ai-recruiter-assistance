@@ -1,13 +1,14 @@
 from models.search_results import SearchResultItem
+from embedding.embedder import MistralEmbedder
 import chromadb
 import uuid
 from collections import defaultdict
 
 class VectorStore:
-    def __init__(self, client):
+    def __init__(self, client: chromadb.ClientAPI) -> None:
         self.collection = client.get_or_create_collection("resumes")
 
-    async def add_documents(self, documents, embedder):
+    async def add_documents(self, documents: list[dict], embedder: MistralEmbedder) -> None:
         texts = [doc["chunk"] for doc in documents]
         embeddings = await embedder.embed_batch(texts)
 
@@ -40,7 +41,7 @@ class VectorStore:
 
         return grouped
 
-    async def search(self, query: str, embedder, k: int = 15) -> list[SearchResultItem]:
+    async def search(self, query: str, embedder: MistralEmbedder, k: int = 15) -> list[SearchResultItem]:
         query_embedding = (await embedder.embed_batch([query]))[0]
 
         results = self.collection.query(

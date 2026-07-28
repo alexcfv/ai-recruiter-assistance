@@ -1,12 +1,14 @@
-import asyncio
 import json
 from db.sqlite.connection import get_db
+from models.schemas import ChatMessage
+from services.profile_builder import ProfileBuilder
+
 
 class AnalyticsService:
-    def __init__(self, llm_client):
+    def __init__(self, llm_client: ProfileBuilder) -> None:
         self.llm_client = llm_client
 
-    async def answer_question(self, question: str, history: list = None) -> str:
+    async def answer_question(self, question: str, history: list[ChatMessage] | None = None) -> str:
         profiles_data = []
         with get_db() as conn:
             cursor = conn.execute("SELECT profile FROM profiles")

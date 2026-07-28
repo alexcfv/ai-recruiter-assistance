@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Dict, DefaultDict, Tuple
+from typing import Dict, DefaultDict, List, Tuple
 from models.search_results import SearchResultItem
 
 

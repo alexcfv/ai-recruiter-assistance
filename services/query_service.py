@@ -3,12 +3,18 @@ import json
 import logging
 from services.ranking import find_best_candidates
 from models.prompts import QUERY_VALIDATOR_PROMPT
+from embedding.embedder import MistralEmbedder
+from db.vector_store import VectorStore
+from services.explainer import LLMExplainer
+from repositories.profile_repo import ProfileRepository
+from services.profile_reranker import ProfileReranker
+from services.profile_builder import ProfileBuilder
 
 logger = logging.getLogger(__name__)
 
 
 class QueryService:
-    def __init__(self, embedder, vector_store, explainer, profile_repository, profile_reranker, llm_client=None):
+    def __init__(self, embedder: MistralEmbedder, vector_store: VectorStore, explainer: LLMExplainer, profile_repository: ProfileRepository, profile_reranker: ProfileReranker, llm_client: ProfileBuilder | None = None) -> None:
         self.embedder = embedder
         self.vector_store = vector_store
         self.explainer = explainer

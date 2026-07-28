@@ -1,7 +1,9 @@
+from services.rate_limiter import RateLimiter
 import litellm
 
+
 class MistralEmbedder:
-    def __init__(self, api_key, model="mistral-embed", timeout=60, rate_limiter=None, api_base=None):
+    def __init__(self, api_key: str, model: str = "mistral-embed", timeout: int = 60, rate_limiter: RateLimiter | None = None, api_base: str | None = None) -> None:
         self.model = f"mistral/{model}"
         self.api_key = api_key
         self.api_base = api_base

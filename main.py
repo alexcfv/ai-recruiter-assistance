@@ -34,8 +34,10 @@ from api.endpoints import search, analytics, index
 import chromadb
 import asyncio
 
+from typing import AsyncGenerator
+
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cfg = load_config()
     init_db()
     api_key_mistral = cfg["api"]["mistral_key"]
@@ -96,7 +98,7 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"]
 app.include_router(index.router, prefix="/api/index", tags=["index"])
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 static_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class GitHubDataCollector:
-    def __init__(self, mcp_client: GitHubMCPClient):
+    def __init__(self, mcp_client: GitHubMCPClient) -> None:
         self.mcp_client = mcp_client
 
     async def collect_user_data(self, username: str) -> dict:

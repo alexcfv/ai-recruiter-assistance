@@ -1,10 +1,12 @@
-import litellm
 import json
+from typing import Any
+import litellm
 from models.prompts import PROFILE_BUILDER_PROMPT
+from services.rate_limiter import RateLimiter
 
 
 class ProfileBuilder:
-    def __init__(self, api_key: str, model="mistral-small-latest", timeout=120, rate_limiter=None, api_base=None):
+    def __init__(self, api_key: str, model: str = "mistral-small-latest", timeout: int = 120, rate_limiter: RateLimiter | None = None, api_base: str | None = None) -> None:
         self.model = f"mistral/{model}"
         self.api_key = api_key
         self.api_base = api_base
@@ -48,7 +50,7 @@ GitHub Analysis:
             profile["github_analysis"] = github_analysis
         return profile
 
-    async def complete(self, prompt: str, json_mode: bool = False) -> any:
+    async def complete(self, prompt: str, json_mode: bool = False) -> Any:
         if self.rate_limiter:
             self.rate_limiter.wait()
 
