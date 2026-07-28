@@ -1,3 +1,9 @@
+import logging
+import inspect
+
+logger = logging.getLogger(__name__)
+
+
 class IndexService:
     def __init__(self, embedder, loader, vector_store, profile_builder, profile_repository, github_collector=None, github_analyzer=None, resume_parser=None):
         self.embedder = embedder
@@ -38,16 +44,13 @@ class IndexService:
                         try:
                             github_data = await self.github_collector.collect_user_data(github_username)
                             
-                            import inspect
                             if inspect.iscoroutinefunction(self.github_analyzer.analyze_code):
                                 github_analysis = await self.github_analyzer.analyze_code(github_data)
                             else:
                                 github_analysis = self.github_analyzer.analyze_code(github_data)
                         
                         except Exception as e:
-                            print(f"GitHub analysis failed for {source}: {e}")
-                            import traceback
-                            traceback.print_exc()
+                            logger.error("GitHub analysis failed for %s: %s", source, e, exc_info=True)
                 
                 profile = await self.profile_builder.build_profile(chunks, github_analysis)
                 self.profile_repository.create_profile(source, profile)

@@ -1,7 +1,10 @@
 import asyncio
 import json
+import logging
 from services.ranking import find_best_candidates
 from models.prompts import QUERY_VALIDATOR_PROMPT
+
+logger = logging.getLogger(__name__)
 
 
 class QueryService:
@@ -33,7 +36,7 @@ class QueryService:
 
             return result
         except Exception as e:
-            print(f"Validation error: {e}")
+            logger.warning("Query validation error: %s", e)
             return {"is_valid": False, "reason": f"LLM Error: {str(e)}"}
 
     async def search(self, query: str, top_k: int = 3) -> dict:

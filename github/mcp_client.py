@@ -1,7 +1,10 @@
 import os
+import logging
 from contextlib import AsyncExitStack
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+
+logger = logging.getLogger(__name__)
 
 
 class GitHubMCPClient:
@@ -16,18 +19,18 @@ class GitHubMCPClient:
         self._stack: AsyncExitStack | None = None
 
     async def __aenter__(self):
-        print("[MCP] Starting stdio_client...")
+        logger.info("Starting stdio client...")
         self._stack = AsyncExitStack()
         read, write = await self._stack.enter_async_context(
             stdio_client(self.server_params)
         )
-        print("[MCP] stdio ready, opening ClientSession...")
+        logger.info("Stdio ready, opening ClientSession...")
         self.session = await self._stack.enter_async_context(
             ClientSession(read, write)
         )
-        print("[MCP] Initializing session...")
+        logger.info("Initializing session...")
         await self.session.initialize()
-        print("[MCP] Session initialized")
+        logger.info("Session initialized")
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

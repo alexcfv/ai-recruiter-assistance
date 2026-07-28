@@ -3,6 +3,9 @@ from models.schemas import IndexResponse, IndexRequest
 from api.deps import get_index_service
 from services.index_service import IndexService
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -34,4 +37,5 @@ async def index_path(
             files_processed=result.get('files_count', 0) or len(result.get('new_profiles', []))
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Index request failed for path %s: %s", path, e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")

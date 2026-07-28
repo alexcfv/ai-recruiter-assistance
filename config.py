@@ -1,7 +1,10 @@
 import sys
 import os
+import logging
 import yaml
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -39,17 +42,17 @@ def load_config(path: str = "config.yaml") -> dict:
             errors.append("github.mcp_server_command is missing")
         
         if not github_token:
-            print("Warning: GITHUB_PERSONAL_ACCESS_TOKEN is not set in .env or environment")
+            logger.warning("GITHUB_PERSONAL_ACCESS_TOKEN is not set in .env or environment")
         
         if "env" not in github:
             github["env"] = {}
         github["env"]["GITHUB_PERSONAL_ACCESS_TOKEN"] = github_token
 
     if errors:
-        print("Config validation failed:")
+        logger.error("Config validation failed:")
         for e in errors:
-            print(f"  - {e}")
-        print(f"\nCheck your .env and {path} files.")
+            logger.error("  - %s", e)
+        logger.error("Check your .env and %s files.", path)
         sys.exit(1)
 
     return cfg
