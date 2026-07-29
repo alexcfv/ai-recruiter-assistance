@@ -14,13 +14,16 @@ logger = logging.getLogger(__name__)
 
 
 class QueryService:
-    def __init__(self, embedder: MistralEmbedder, vector_store: VectorStore, explainer: LLMExplainer, profile_repository: ProfileRepository, profile_reranker: ProfileReranker, llm_client: ProfileBuilder | None = None) -> None:
+    def __init__(self, embedder: MistralEmbedder, vector_store: VectorStore, explainer: LLMExplainer, profile_repository: ProfileRepository, profile_reranker: ProfileReranker, llm_client: ProfileBuilder | None = None, top_k_chromadb: int = 10, ranking_best_weight: float = 0.7, ranking_avg_weight: float = 0.3) -> None:
         self.embedder = embedder
         self.vector_store = vector_store
         self.explainer = explainer
         self.profile_repository = profile_repository
         self.profile_reranker = profile_reranker
         self.llm_client = llm_client
+        self.top_k_chromadb = top_k_chromadb
+        self.ranking_best_weight = ranking_best_weight
+        self.ranking_avg_weight = ranking_avg_weight
 
     async def _validate_query(self, query: str) -> dict:
         if not self.llm_client:
@@ -54,8 +57,8 @@ class QueryService:
                 "error": validation.get("reason", "Invalid query")
             }
 
-        results = await self.vector_store.search(query, self.embedder, k=10)
-        ranked = find_best_candidates(results)
+        results = await self.vector_store.search(query, self.embedder, k=self.top_k_chromadb)
+        ranked = find_best_candidates(results, self.ranking_best_weight, self.ranking_avg_weight)
 
         sources = [s for s, _ in ranked]
         profiles = await asyncio.to_thread(self.profile_repository.get_by_sources, sources)

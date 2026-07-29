@@ -2,6 +2,10 @@ import pdfplumber
 import re
 
 class ResumeParser:
+    def __init__(self, chunk_size: int = 500, overlap: int = 100) -> None:
+        self.chunk_size = chunk_size
+        self.overlap = overlap
+
     def parse_pdf(self, file_path: str) -> list[str]:
         text = ""
 
@@ -28,9 +32,9 @@ class ResumeParser:
     def clean_text(self, text: str) -> list[str]:
         text = text.replace("\n", " ")
         text = " ".join(text.split())
-        return self.split_text(text)
+        return self.split_text(text, self.chunk_size, self.overlap)
     
-    def split_text(self, text: str, chunk_size=500, overlap=100) -> list[str]:
+    def split_text(self, text: str, chunk_size: int, overlap: int) -> list[str]:
         chunks = []
     
         start = 0
