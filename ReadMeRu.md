@@ -1,8 +1,11 @@
-![Python](https://img.shields.io/badge/python-3.10+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Mistral](https://img.shields.io/badge/Mistral-API-orange)
-![Telegram](https://img.shields.io/badge/Telegram-bot-blue)
-![ChromaDB](https://img.shields.io/badge/ChromaDB-vector--db-yellow)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Mistral AI](https://img.shields.io/badge/Mistral_AI-FF6F00?logo=mistral&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-FC6A31?logo=chromadb&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-B22222)
 
 Языки:
 - 🇷🇺 Русский
