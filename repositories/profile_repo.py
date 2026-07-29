@@ -4,7 +4,7 @@ import uuid
 from db.sqlite.connection import get_db
 
 class ProfileRepository:
-    def create_profile(self, profile_source: str, profile: dict):
+    def create_profile(self, profile_source: str, profile: dict) -> None:
         profile_uuid = str(uuid.uuid4())
 
         with get_db() as conn:
@@ -21,7 +21,7 @@ class ProfileRepository:
             ).fetchone()
             return row is not None
 
-    def get_all(self):
+    def get_all(self) -> list[dict]:
         with get_db() as conn:
             rows = conn.execute("SELECT * FROM profiles").fetchall()
             return [dict(row) for row in rows]

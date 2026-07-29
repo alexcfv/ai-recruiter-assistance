@@ -16,6 +16,19 @@ profile_builder:
 reranker:
   model: mistral-small-2603
   timeout: 120
+  embedding_weight: 0.3
+  llm_weight: 0.7
+
+query_service:
+  top_k_chromadb: 10
+
+ranking:
+  best_weight: 0.7
+  avg_weight: 0.3
+
+parser:
+  chunk_size: 500
+  overlap: 100
 
 github:
   mcp_server_command: "npx -y @modelcontextprotocol/server-github"

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 class GitHubAnalysis(BaseModel):
     code_quality: Optional[str] = Field(None, description="Assessment of code quality")

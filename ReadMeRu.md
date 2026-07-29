@@ -97,6 +97,22 @@
 - **1** вызов LLM (все профили + вопрос → ответ).
 - *Итого: **1** вызов Mistral API на один аналитический вопрос.*
 
+## Конфигурация
+
+Все настраиваемые параметры в `config.yaml`:
+
+| Секция | Параметр | По умолчанию | Описание |
+|--------|----------|-------------|----------|
+| `rate_limiter` | `min_interval` | `1.2` | Минимальное количество секунд между API-вызовами |
+| `embedder` | `model` / `timeout` | `mistral-embed` / `60` | Модель эмбеддингов и таймаут |
+| `explainer` | `model` / `timeout` | `mistral-small-2603` / `60` | LLM для объяснения результатов |
+| `profile_builder` | `model` / `timeout` | `mistral-small-latest` / `120` | LLM для генерации профилей |
+| `reranker` | `model` / `timeout` | `mistral-small-2603` / `120` | LLM для переранжирования |
+| `reranker` | `embedding_weight` / `llm_weight` | `0.3` / `0.7` | Баланс между вектроным расстоянием и оценкой LLM: `final_score = embedding_weight * emb_score + llm_weight * (1 - llm_rating / 10)` |
+| `ranking` | `best_weight` / `avg_weight` | `0.7` / `0.3` | Баланс между лучшим и средним расстоянием чанков: `score = best_weight * best + avg_weight * avg` |
+| `query_service` | `top_k_chromadb` | `10` | Количество кандидатов, передаваемых LLM на переранжирование |
+| `parser` | `chunk_size` / `overlap` | `500` / `100` | Размер чанка и перекрытие при разбивке PDF (влияет на качество поиска) |
+
 ## Установка
 
 ### Запуск через Docker (Рекомендуется)

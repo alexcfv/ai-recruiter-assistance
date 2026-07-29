@@ -34,8 +34,10 @@ from api.endpoints import search, analytics, index
 import chromadb
 import asyncio
 
+from typing import AsyncGenerator
+
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cfg = load_config()
     init_db()
     api_key_mistral = cfg["api"]["mistral_key"]
@@ -45,10 +47,18 @@ async def lifespan(app: FastAPI):
     embedder = MistralEmbedder(api_key_mistral, model=cfg["embedder"]["model"], timeout=cfg["embedder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
     explainer = LLMExplainer(api_key_mistral, model=cfg["explainer"]["model"], timeout=cfg["explainer"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
     loader = ResumeLoader()
-    parser = ResumeParser()
+    parser = ResumeParser(
+        chunk_size=cfg.get("parser", {}).get("chunk_size", 500),
+        overlap=cfg.get("parser", {}).get("overlap", 100),
+    )
     profile_repository = ProfileRepository()
     profile_builder = ProfileBuilder(api_key_mistral, model=cfg["profile_builder"]["model"], timeout=cfg["profile_builder"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
-    profile_reranker = ProfileReranker(api_key_mistral, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"], rate_limiter=rate_limiter, api_base=llm_base_url)
+    profile_reranker = ProfileReranker(
+        api_key_mistral, model=cfg["reranker"]["model"], timeout=cfg["reranker"]["timeout"],
+        rate_limiter=rate_limiter, api_base=llm_base_url,
+        embedding_weight=cfg.get("reranker", {}).get("embedding_weight", 0.3),
+        llm_weight=cfg.get("reranker", {}).get("llm_weight", 0.7),
+    )
     client = chromadb.PersistentClient(path="./chromadb")
     vector_store = VectorStore(client)
     
@@ -73,7 +83,13 @@ async def lifespan(app: FastAPI):
             logger.error("Failed to initialize GitHub MCP client: %s", e)
 
     app.state.index_service = IndexService(embedder, loader, vector_store, profile_builder, profile_repository, github_collector, github_analyzer, parser)
-    app.state.query_service = QueryService(embedder, vector_store, explainer, profile_repository, profile_reranker, llm_client=profile_builder)
+    app.state.query_service = QueryService(
+        embedder, vector_store, explainer, profile_repository, profile_reranker,
+        llm_client=profile_builder,
+        top_k_chromadb=cfg.get("query_service", {}).get("top_k_chromadb", 10),
+        ranking_best_weight=cfg.get("ranking", {}).get("best_weight", 0.7),
+        ranking_avg_weight=cfg.get("ranking", {}).get("avg_weight", 0.3),
+    )
     app.state.analytics_service = analytics_service
 
     yield
@@ -96,7 +112,7 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"]
 app.include_router(index.router, prefix="/api/index", tags=["index"])
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 static_dir = os.path.join(os.path.dirname(__file__), "frontend", "dist")

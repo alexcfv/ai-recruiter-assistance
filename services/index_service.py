@@ -1,11 +1,19 @@
 import logging
 import inspect
+from embedding.embedder import MistralEmbedder
+from ingestion.loader import ResumeLoader
+from db.vector_store import VectorStore
+from services.profile_builder import ProfileBuilder
+from repositories.profile_repo import ProfileRepository
+from github.collector import GitHubDataCollector
+from github.analyzer import GitHubCodeAnalyzer
+from ingestion.parser import ResumeParser
 
 logger = logging.getLogger(__name__)
 
 
 class IndexService:
-    def __init__(self, embedder, loader, vector_store, profile_builder, profile_repository, github_collector=None, github_analyzer=None, resume_parser=None):
+    def __init__(self, embedder: MistralEmbedder, loader: ResumeLoader, vector_store: VectorStore, profile_builder: ProfileBuilder, profile_repository: ProfileRepository, github_collector: GitHubDataCollector | None = None, github_analyzer: GitHubCodeAnalyzer | None = None, resume_parser: ResumeParser | None = None) -> None:
         self.embedder = embedder
         self.loader = loader
         self.vector_store = vector_store

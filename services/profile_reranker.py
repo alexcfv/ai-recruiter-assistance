@@ -1,15 +1,18 @@
-import litellm
 import json
+import litellm
 from models.prompts import RERANKER_PROMPT
+from services.rate_limiter import RateLimiter
 
 
 class ProfileReranker:
-    def __init__(self, api_key: str, model="mistral-small-2603", timeout=120, rate_limiter=None, api_base=None):
+    def __init__(self, api_key: str, model: str = "mistral-small-2603", timeout: int = 120, rate_limiter: RateLimiter | None = None, api_base: str | None = None, embedding_weight: float = 0.3, llm_weight: float = 0.7) -> None:
         self.model = f"mistral/{model}"
         self.api_key = api_key
         self.api_base = api_base
         self.timeout = timeout
         self.rate_limiter = rate_limiter
+        self.embedding_weight = embedding_weight
+        self.llm_weight = llm_weight
 
     async def rerank(
         self,
@@ -79,7 +82,7 @@ class ProfileReranker:
                 llm_score = 5.0
 
             llm_score = max(1, min(10, llm_score))
-            final_score = 0.3 * emb_score + 0.7 * (1 - llm_score / 10)
+            final_score = self.embedding_weight * emb_score + self.llm_weight * (1 - llm_score / 10)
             results.append((source, final_score, f"LLM score: {llm_score:.0f}/10"))
 
         results.sort(key=lambda x: x[1])

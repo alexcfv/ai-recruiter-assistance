@@ -2,10 +2,10 @@ import os
 from .parser import ResumeParser
 
 class ResumeLoader:
-    def __init__(self):
+    def __init__(self) -> None:
         self.parser = ResumeParser()
 
-    def load_folder(self, path: str) -> list[str]:
+    def load_folder(self, path: str) -> list[dict]:
         documents = []
 
         for filename in os.listdir(path):

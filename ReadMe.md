@@ -95,6 +95,22 @@ User question → fetch all profiles from SQLite → LLM analysis → answer
 - **1** LLM call (all profiles + question → answer)
 - *Total: **1** Mistral API call per analytics question*
 
+## Configuration
+
+All tunable parameters are in `config.yaml`:
+
+| Section | Parameter | Default | Description |
+|---------|-----------|---------|-------------|
+| `rate_limiter` | `min_interval` | `1.2` | Min seconds between API calls |
+| `embedder` | `model` / `timeout` | `mistral-embed` / `60` | Embedding model and timeout |
+| `explainer` | `model` / `timeout` | `mistral-small-2603` / `60` | LLM model for candidate explanations |
+| `profile_builder` | `model` / `timeout` | `mistral-small-latest` / `120` | LLM model for profile generation |
+| `reranker` | `model` / `timeout` | `mistral-small-2603` / `120` | LLM model for candidate reranking |
+| `reranker` | `embedding_weight` / `llm_weight` | `0.3` / `0.7` | Balance between vector score and LLM rating in `final_score = embedding_weight * emb_score + llm_weight * (1 - llm_rating / 10)` |
+| `ranking` | `best_weight` / `avg_weight` | `0.7` / `0.3` | Balance between best chunk and average chunk distance: `score = best_weight * best + avg_weight * avg` |
+| `query_service` | `top_k_chromadb` | `10` | Number of candidates passed to LLM reranker |
+| `parser` | `chunk_size` / `overlap` | `500` / `100` | PDF text chunk size and overlap (impacts search quality) |
+
 ## Setup
 
 ### Docker Setup (Recommended)
